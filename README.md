@@ -1,133 +1,131 @@
 # OurChants API
 
-A serverless REST API for managing song data using AWS Lambda and DynamoDB.
+A serverless REST API for managing song data, built with AWS Lambda, API Gateway, and DynamoDB.
 
 ## Overview
 
-OurChants API provides a serverless interface for storing and managing song metadata using DynamoDB as the backend database. The API is built using AWS Lambda and API Gateway, providing a scalable and cost-effective solution.
+The OurChants API provides endpoints for managing songs, including their titles, artists, and lyrics. It's built using:
 
-## Features
-
-- Serverless architecture using AWS Lambda
-- RESTful API endpoints via API Gateway
-- DynamoDB backend for reliable data storage
-- Create, read, update, and delete operations for songs
-- Comprehensive test suite with AWS service mocking
-- Infrastructure as Code using AWS CDK
-- Robust error handling and logging
-
-## API Endpoints
-
-- `GET /songs`: List all songs
-- `POST /songs`: Create a new song
-- `GET /songs/<song_id>`: Get a specific song
-- `PUT /songs/<song_id>`: Update a song
-- `DELETE /songs/<song_id>`: Delete a song
+- AWS Lambda for serverless compute
+- Amazon API Gateway for REST API management
+- Amazon DynamoDB for data storage
+- AWS CDK for infrastructure as code
+- Python 3.8+ for implementation
 
 ## Project Structure
 
 ```
-api/
-├── lambda/                 # Lambda function code
-│   ├── app.py             # Main Lambda handler
-│   └── routes/            # Route handlers
-│       └── songs.py       # Song-related routes
-├── cdk/                   # CDK infrastructure
-│   └── songs_api/         # Songs API stack
-│       ├── app.py         # CDK app entry point
-│       └── songs_api_stack.py
-├── tests/                 # Test suite
-│   ├── conftest.py        # Test fixtures
-│   ├── test_routes.py     # API tests
-│   ├── test_integration.py # Integration tests
-│   └── test_config.py     # Configuration tests
-└── requirements.txt       # Python dependencies
+.
+├── api/                # API implementation code
+├── infrastructure/     # AWS CDK infrastructure code
+├── tests/             # Test suites (unit, integration, e2e)
+├── utilities/         # Helper scripts and tools
+├── setup.py           # Python package configuration
+└── songs.json         # Sample song data
 ```
 
-## Getting Started
+See individual directory READMEs for detailed information about each component.
 
-1. Clone the repository:
+## Prerequisites
+
+- Python 3.8 or higher
+- AWS CLI configured with appropriate credentials
+- Node.js and npm (for AWS CDK)
+- AWS CDK CLI (`npm install -g aws-cdk`)
+
+## Quick Start
+
+1. Configure AWS credentials:
    ```bash
-   git clone https://github.com/yourusername/ourchants-api.git
-   cd ourchants-api
+   aws configure
    ```
 
 2. Install dependencies:
    ```bash
-   cd api
-   pip install -r requirements.txt
-   ```
-
-3. Set up environment variables:
-   ```bash
-   # Create .env file with:
-   DYNAMODB_TABLE_NAME=ourchants-items
-   ```
-
-## Deployment
-
-The infrastructure is managed using AWS CDK. To deploy:
-
-1. Install CDK:
-   ```bash
+   # Install Python dependencies
+   python3 -m pip install -r infrastructure/requirements.txt
+   python3 -m pip install -r tests/requirements-test.txt
+   
+   # Install CDK globally
    npm install -g aws-cdk
    ```
 
-2. Deploy the stack:
+3. Deploy the API:
    ```bash
-   cd api/cdk/songs_api
-   cdk deploy
+   cd infrastructure
+   ./deploy.sh
    ```
 
-3. Test the deployment:
+4. Run tests:
    ```bash
-   ./test_api.sh
+   # Run all tests
+   python3 -m pytest tests/
+
+   # Run specific test suites
+   python3 -m pytest tests/api/        # Unit tests
+   python3 -m pytest tests/e2e/        # End-to-end tests
    ```
+
+## API Endpoints
+
+- `GET /songs` - List all songs
+- `POST /songs` - Create a new song
+- `GET /songs/{song_id}` - Get a specific song
+- `PUT /songs/{song_id}` - Update a song
+- `DELETE /songs/{song_id}` - Delete a song
+
+### Request/Response Examples
+
+#### Create Song
+```json
+POST /songs
+{
+    "title": "Example Song",
+    "artist": "Example Artist",
+    "lyrics": "Example lyrics..."
+}
+```
+
+#### Response
+```json
+{
+    "song_id": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Example Song",
+    "artist": "Example Artist",
+    "lyrics": "Example lyrics..."
+}
+```
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development guidelines, including:
+- Local development setup
+- Testing strategies
+- Deployment procedures
+- Troubleshooting guides
 
 ## Testing
 
-The project includes a comprehensive test suite using pytest and moto for AWS mocking. Run tests with:
-```bash
-python -m pytest tests/ -v
-```
+The project includes three levels of testing:
+1. Unit tests (`tests/api/`)
+2. Integration tests (`tests/api/`)
+3. End-to-end tests (`tests/e2e/`)
 
-For continuous test watching during development:
-```bash
-./watch_tests.sh
-```
+See the [tests/README.md](tests/README.md) for detailed testing information.
 
-## Environment Variables
+## Infrastructure
 
-- `DYNAMODB_TABLE_NAME`: Name of the DynamoDB table (default: ourchants-items)
+The API infrastructure is managed using AWS CDK. Key components:
+- DynamoDB table for song storage
+- Lambda function for API logic
+- API Gateway for REST interface
 
-## Maintenance
-
-### Updating the API
-
-1. Make your changes to the Lambda code in `api/lambda/`
-2. Run tests to ensure everything works
-3. Deploy the changes:
-   ```bash
-   cd api/cdk/songs_api
-   cdk deploy
-   ```
-4. Verify the deployment with `./test_api.sh`
-
-### Troubleshooting
-
-1. Check CloudWatch logs for the Lambda function
-2. Verify DynamoDB table permissions
-3. Ensure environment variables are set correctly
-4. Check API Gateway configuration
+See [infrastructure/README.md](infrastructure/README.md) for infrastructure details.
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
+2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
