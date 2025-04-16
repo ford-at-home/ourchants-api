@@ -1,0 +1,97 @@
+{
+ "Resources": {
+  "SongsTable64F8B317": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "song_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "song_id",
+      "KeyType": "HASH"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "DatabaseStack/SongsTable/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXIOQqAMBBA0bPYJ+PW2HsARe1lsohxScRMkCDeXdDqP34BeVVCluDluVQr34yAuyeUK8PLjypa3J0ScA8oNs3qyX54WKe9C6f8VhPoCPSwNtLsbFpCBUWyeGP4GSyZXUP39wUwdgdebgAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "DatabaseStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "TableName": {
+   "Description": "Name of the DynamoDB table",
+   "Value": {
+    "Ref": "SongsTable64F8B317"
+   }
+  },
+  "ExportsOutputFnGetAttSongsTable64F8B317ArnEAB5B67E": {
+   "Value": {
+    "Fn::GetAtt": [
+     "SongsTable64F8B317",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "DatabaseStack:ExportsOutputFnGetAttSongsTable64F8B317ArnEAB5B67E"
+   }
+  },
+  "ExportsOutputRefSongsTable64F8B31794ADE60C": {
+   "Value": {
+    "Ref": "SongsTable64F8B317"
+   },
+   "Export": {
+    "Name": "DatabaseStack:ExportsOutputRefSongsTable64F8B31794ADE60C"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
