@@ -1,0 +1,34 @@
+{
+  "version": "40.0.0",
+  "files": {
+    "7298871a2667eb24247661300d1d38e73042d6154d3994680432416d025607d3": {
+      "source": {
+        "path": "asset.7298871a2667eb24247661300d1d38e73042d6154d3994680432416d025607d3",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "7298871a2667eb24247661300d1d38e73042d6154d3994680432416d025607d3.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    },
+    "b96ea08b40b23928075ecea420a0c1c3f2caf954e2ea99868fc8dd67711e4db6": {
+      "source": {
+        "path": "SongsApiStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "b96ea08b40b23928075ecea420a0c1c3f2caf954e2ea99868fc8dd67711e4db6.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

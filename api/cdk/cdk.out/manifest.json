@@ -1,0 +1,227 @@
+{
+  "version": "40.0.0",
+  "artifacts": {
+    "SongsApiStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "SongsApiStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "SongsApiStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/us-east-1",
+      "properties": {
+        "templateFile": "SongsApiStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/b96ea08b40b23928075ecea420a0c1c3f2caf954e2ea99868fc8dd67711e4db6.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "SongsApiStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "SongsApiStack.assets"
+      ],
+      "metadata": {
+        "/SongsApiStack/SongsTable/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsTable64F8B317"
+          }
+        ],
+        "/SongsApiStack/SongsLambda/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsLambdaServiceRole228DD055"
+          }
+        ],
+        "/SongsApiStack/SongsLambda/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsLambdaServiceRoleDefaultPolicy1C9E4DB3"
+          }
+        ],
+        "/SongsApiStack/SongsLambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsLambda1C3C9254"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApi2ADAB318"
+          }
+        ],
+        "/SongsApiStack/SongsApi/CloudWatchRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApiCloudWatchRole3DC84C2C"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Account": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApiAccount99A39F62"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApiDeployment3F40F17086f526801626a4a49f90e9d367de7510"
+          }
+        ],
+        "/SongsApiStack/SongsApi/DeploymentStage.prod/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApiDeploymentStageprod023636B5"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApiEndpoint7DF87985"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsF86F2D4D"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/GET/ApiPermission.SongsApiStackSongsApi3445C804.GET..songs": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsGETApiPermissionSongsApiStackSongsApi3445C804GETsongs4E7252F7"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/GET/ApiPermission.Test.SongsApiStackSongsApi3445C804.GET..songs": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsGETApiPermissionTestSongsApiStackSongsApi3445C804GETsongs003A5BBE"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsGET5FD658A0"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/POST/ApiPermission.SongsApiStackSongsApi3445C804.POST..songs": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsPOSTApiPermissionSongsApiStackSongsApi3445C804POSTsongs218D722C"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/POST/ApiPermission.Test.SongsApiStackSongsApi3445C804.POST..songs": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsPOSTApiPermissionTestSongsApiStackSongsApi3445C804POSTsongs821F04DB"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongsPOSTE890A8B0"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongid53FF27C2"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.SongsApiStackSongsApi3445C804.GET..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidGETApiPermissionSongsApiStackSongsApi3445C804GETsongssongid276B371D"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.Test.SongsApiStackSongsApi3445C804.GET..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidGETApiPermissionTestSongsApiStackSongsApi3445C804GETsongssongid0879B44F"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidGET721DED46"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.SongsApiStackSongsApi3445C804.PUT..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidPUTApiPermissionSongsApiStackSongsApi3445C804PUTsongssongidE48F1FB9"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.Test.SongsApiStackSongsApi3445C804.PUT..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidPUTApiPermissionTestSongsApiStackSongsApi3445C804PUTsongssongidFACE00BE"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/PUT/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidPUTF5A99F33"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.SongsApiStackSongsApi3445C804.DELETE..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidDELETEApiPermissionSongsApiStackSongsApi3445C804DELETEsongssongid7FA2AD99"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.Test.SongsApiStackSongsApi3445C804.DELETE..songs.{song_id}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidDELETEApiPermissionTestSongsApiStackSongsApi3445C804DELETEsongssongid2681AE22"
+          }
+        ],
+        "/SongsApiStack/SongsApi/Default/songs/{song_id}/DELETE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsApisongssongidDELETE5928C0E4"
+          }
+        ],
+        "/SongsApiStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/SongsApiStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/SongsApiStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "SongsApiStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
