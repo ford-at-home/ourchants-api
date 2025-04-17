@@ -10,7 +10,6 @@ from uuid import uuid4
 from typing import Dict, List, Optional, Any
 from marshmallow import ValidationError
 from .schemas import song_schema, songs_schema
-from botocore.exceptions import ClientError
 
 class SongsApi:
     def __init__(self, table):
@@ -44,10 +43,6 @@ class SongsApi:
 
     def update_song(self, song_id: str, song_data: Dict[str, str]) -> Optional[Dict[str, Any]]:
         """Update a song."""
-        # First check if the song exists
-        if not self.get_song(song_id):
-            return None
-
         # Validate and clean input data
         try:
             validated_data = song_schema.load(song_data)
@@ -67,18 +62,15 @@ class SongsApi:
         
         update_expr = update_expr.rstrip(', ')
         
-        try:
-            response = self.table.update_item(
-                Key={'song_id': song_id},
-                UpdateExpression=update_expr,
-                ExpressionAttributeNames=expr_names,
-                ExpressionAttributeValues=expr_values,
-                ReturnValues='ALL_NEW'
-            )
-            item = response.get('Attributes')
-            return song_schema.dump(item) if item else None
-        except ClientError:
-            return None
+        response = self.table.update_item(
+            Key={'song_id': song_id},
+            UpdateExpression=update_expr,
+            ExpressionAttributeNames=expr_names,
+            ExpressionAttributeValues=expr_values,
+            ReturnValues='ALL_NEW'
+        )
+        item = response.get('Attributes')
+        return song_schema.dump(item) if item else None
 
     def delete_song(self, song_id: str) -> None:
         """Delete a song."""

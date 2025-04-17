@@ -17,6 +17,7 @@ The OurChants API provides endpoints for managing songs, including their titles,
 ```
 .
 ├── api/                # API implementation code
+│   └── swagger.yaml   # OpenAPI/Swagger documentation
 ├── infrastructure/     # AWS CDK infrastructure code
 ├── tests/             # Test suites (unit, integration, e2e)
 ├── utilities/         # Helper scripts and tools
@@ -80,9 +81,17 @@ See individual directory READMEs for detailed information about each component.
 ```json
 POST /songs
 {
-    "title": "Example Song",
-    "artist": "Example Artist",
-    "lyrics": "Example lyrics..."
+    "title": "21 Wairaitirai Suntarai snippet-?",
+    "artist": "Muse",
+    "album": "Muse",
+    "bpm": "120",
+    "composer": "Allah",
+    "version": "del Tiempo",
+    "date": "2012-04-06 09:36:00",
+    "filename": "21_wairaitirai_suntarai_snippet-_.mp3",
+    "filepath": "Media.localized/21_wairaitirai_suntarai_snippet-_.mp3",
+    "description": "",
+    "lineage": []
 }
 ```
 
@@ -90,9 +99,17 @@ POST /songs
 ```json
 {
     "song_id": "123e4567-e89b-12d3-a456-426614174000",
-    "title": "Example Song",
-    "artist": "Example Artist",
-    "lyrics": "Example lyrics..."
+    "title": "21 Wairaitirai Suntarai snippet-?",
+    "artist": "Muse",
+    "album": "Muse",
+    "bpm": "120",
+    "composer": "Allah",
+    "version": "del Tiempo",
+    "date": "2012-04-06 09:36:00",
+    "filename": "21_wairaitirai_suntarai_snippet-_.mp3",
+    "filepath": "Media.localized/21_wairaitirai_suntarai_snippet-_.mp3",
+    "description": "",
+    "lineage": []
 }
 ```
 
@@ -121,6 +138,28 @@ The API infrastructure is managed using AWS CDK. Key components:
 - API Gateway for REST interface
 
 See [infrastructure/README.md](infrastructure/README.md) for infrastructure details.
+
+## API Documentation
+
+The API is documented using the OpenAPI (Swagger) specification. You can find the complete API documentation in `api/swagger.yaml`. This documentation includes:
+
+- Detailed endpoint descriptions
+- Request/response schemas
+- Authentication requirements
+- Example requests and responses
+
+To view the documentation in a user-friendly format:
+
+1. Visit [Swagger Editor](https://editor.swagger.io/)
+2. Copy the contents of `api/swagger.yaml`
+3. Paste into the editor
+
+Alternatively, you can use tools like `swagger-ui` to serve the documentation locally:
+
+```bash
+npm install -g swagger-ui-cli
+swagger-ui-cli serve api/swagger.yaml
+```
 
 ## Contributing
 

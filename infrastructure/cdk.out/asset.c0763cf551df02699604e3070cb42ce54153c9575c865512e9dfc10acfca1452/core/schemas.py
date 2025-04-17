@@ -2,7 +2,7 @@
 Schemas for data validation in the Songs API.
 """
 
-from marshmallow import Schema, fields, validate, EXCLUDE, pre_load, post_dump
+from marshmallow import Schema, fields, validate, EXCLUDE
 from datetime import datetime
 
 class SongSchema(Schema):
@@ -14,7 +14,7 @@ class SongSchema(Schema):
     bpm = fields.String(allow_none=True)  # Keeping as string to match existing data
     composer = fields.String(allow_none=True)
     version = fields.String(allow_none=True)
-    date = fields.String(allow_none=True)  # Store as string in DynamoDB
+    date = fields.DateTime(allow_none=True, format='%Y-%m-%d %H:%M:%S')
     filename = fields.String(allow_none=True)
     filepath = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
@@ -23,23 +23,6 @@ class SongSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Reject unknown fields
         ordered = True  # Keep field order consistent
-
-    @pre_load
-    def format_date(self, data, **kwargs):
-        """Format date before loading."""
-        if isinstance(data.get('date'), datetime):
-            data['date'] = data['date'].strftime('%Y-%m-%d %H:%M:%S')
-        return data
-
-    @post_dump
-    def ensure_defaults(self, data, **kwargs):
-        """Ensure all fields have default values."""
-        for field in self.fields:
-            if field not in data:
-                data[field] = None
-        if 'lineage' in data and data['lineage'] is None:
-            data['lineage'] = []
-        return data
 
 # Create instances for reuse
 song_schema = SongSchema()

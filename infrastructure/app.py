@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from aws_cdk import App, Environment
-from infrastructure.database.stacks.db_stack import DatabaseStack
-from infrastructure.api.stacks.api_stack import ApiStack
+from stacks.db_stack import DatabaseStack
+from stacks.api_stack import ApiStack
 
 app = App()
 

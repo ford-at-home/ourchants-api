@@ -1,6 +1,8 @@
 """
 End-to-end tests for the deployed Songs API.
 
+Only run after API has been successfully deployed.
+
 These tests verify that the API works in the actual AWS environment by:
 1. Finding the deployed API URL from AWS API Gateway
 2. Making real HTTP requests to the API
@@ -14,7 +16,9 @@ import pytest
 import requests
 from uuid import uuid4
 from time import sleep
+from pprint import pprint
 from botocore.exceptions import ClientError
+from datetime import datetime
 
 def get_api_url():
     """Get the API URL from AWS API Gateway."""
@@ -55,11 +59,19 @@ def api_url():
 
 @pytest.fixture
 def test_song():
-    """Create a test song fixture."""
+    """Create a test song fixture with all fields."""
     return {
         'title': f'Test Song {uuid4()}',
         'artist': 'E2E Test Artist',
-        'lyrics': 'Test lyrics for end-to-end testing'
+        'album': 'Test Album',
+        'bpm': '120',
+        'composer': 'Test Composer',
+        'version': '1.0',
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'filename': 'test_song.mp3',
+        'filepath': 'Media/test_song.mp3',
+        'description': 'A test song for end-to-end testing',
+        'lineage': ['original']
     }
 
 def test_api_lifecycle(api_url, test_song):
@@ -73,8 +85,15 @@ def test_api_lifecycle(api_url, test_song):
     assert create_response.status_code == 201, f"Failed to create song. Response: {create_response.text}"
     song_data = create_response.json()
     song_id = song_data['song_id']
-    assert song_data['title'] == test_song['title']
-    assert song_data['artist'] == test_song['artist']
+    
+    print("\n=== Created Song ===")
+    pprint(song_data, indent=2, width=120)
+    print("==================\n")
+    
+    # Verify all fields
+    for field in test_song:
+        assert song_data[field] == test_song[field], f"Field {field} does not match"
+    assert 'song_id' in song_data
     
     # Give DynamoDB a moment to achieve consistency
     sleep(1)
@@ -82,19 +101,38 @@ def test_api_lifecycle(api_url, test_song):
     # 2. Get the song
     get_response = requests.get(f'{api_url}/songs/{song_id}')
     assert get_response.status_code == 200, f"Failed to get song. Response: {get_response.text}"
-    assert get_response.json() == song_data
+    retrieved_song = get_response.json()
+    
+    print("\n=== Retrieved Song ===")
+    pprint(retrieved_song, indent=2, width=120)
+    print("=====================\n")
+    
+    assert retrieved_song == song_data
     
     # 3. List all songs
     list_response = requests.get(f'{api_url}/songs')
     assert list_response.status_code == 200, f"Failed to list songs. Response: {list_response.text}"
     songs = list_response.json()
+    
+    print("\n=== All Songs ===")
+    pprint(songs, indent=2, width=120)
+    print("================\n")
+    
     assert any(s['song_id'] == song_id for s in songs)
     
-    # 4. Update the song
+    # 4. Update the song with all fields
     updated_data = {
         'title': 'Updated E2E Test Song',
         'artist': 'Updated Test Artist',
-        'lyrics': 'Updated test lyrics'
+        'album': 'Updated Test Album',
+        'bpm': '140',
+        'composer': 'Updated Test Composer',
+        'version': '2.0',
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'filename': 'updated_test_song.mp3',
+        'filepath': 'Media/updated_test_song.mp3',
+        'description': 'An updated test song for end-to-end testing',
+        'lineage': ['original', 'updated']
     }
     update_response = requests.put(
         f'{api_url}/songs/{song_id}',
@@ -102,12 +140,22 @@ def test_api_lifecycle(api_url, test_song):
     )
     assert update_response.status_code == 200, f"Failed to update song. Response: {update_response.text}"
     updated_song = update_response.json()
+    
+    print("\n=== Updated Song ===")
+    pprint(updated_song, indent=2, width=120)
+    print("===================\n")
+    
+    # Verify all updated fields
+    for field in updated_data:
+        assert updated_song[field] == updated_data[field], f"Updated field {field} does not match"
     assert updated_song['song_id'] == song_id
-    assert updated_song['title'] == updated_data['title']
     
     # 5. Delete the song
     delete_response = requests.delete(f'{api_url}/songs/{song_id}')
     assert delete_response.status_code == 204, f"Failed to delete song. Response: {delete_response.text}"
+    
+    print("\n=== Song Deleted Successfully ===")
+    print("==============================\n")
     
     # Verify deletion
     get_response = requests.get(f'{api_url}/songs/{song_id}')
@@ -133,8 +181,18 @@ def test_concurrent_operations(api_url, test_song):
     
     try:
         # Try two updates in quick succession
-        update1 = {'title': 'Update 1', 'artist': test_song['artist'], 'lyrics': test_song['lyrics']}
-        update2 = {'title': 'Update 2', 'artist': test_song['artist'], 'lyrics': test_song['lyrics']}
+        update1 = {
+            'title': 'Update 1',
+            'artist': test_song['artist'],
+            'album': test_song['album'],
+            'description': 'First concurrent update'
+        }
+        update2 = {
+            'title': 'Update 2',
+            'artist': test_song['artist'],
+            'album': test_song['album'],
+            'description': 'Second concurrent update'
+        }
         
         response1 = requests.put(f'{api_url}/songs/{song_id}', json=update1)
         response2 = requests.put(f'{api_url}/songs/{song_id}', json=update2)
@@ -146,7 +204,13 @@ def test_concurrent_operations(api_url, test_song):
         get_response = requests.get(f'{api_url}/songs/{song_id}')
         assert get_response.status_code == 200, f"Failed to get song. Response: {get_response.text}"
         final_state = get_response.json()
+        
+        print("\n=== Final State After Concurrent Updates ===")
+        pprint(final_state, indent=2, width=120)
+        print("=======================================\n")
+        
         assert final_state['title'] in ['Update 1', 'Update 2']
+        assert final_state['description'] in ['First concurrent update', 'Second concurrent update']
     
     finally:
         # Cleanup

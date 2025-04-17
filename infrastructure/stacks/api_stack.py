@@ -5,7 +5,7 @@ from aws_cdk import (
     CfnOutput
 )
 from constructs import Construct
-from infrastructure.database.stacks.db_stack import DatabaseStack
+from .db_stack import DatabaseStack
 import os
 
 class ApiStack(Stack):
@@ -13,7 +13,7 @@ class ApiStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # Get the path to the Lambda code
-        lambda_code_path = os.path.join(os.path.dirname(__file__), "../../../api")
+        lambda_code_path = os.path.join(os.path.dirname(__file__), "../../api")
 
         # Create Lambda function
         function = lambda_.Function(

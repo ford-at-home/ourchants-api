@@ -1,0 +1,241 @@
+openapi: 3.0.0
+info:
+  title: OurChants API
+  description: A serverless REST API for managing song data
+  version: 1.0.0
+
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
+    variables:
+      apiId:
+        description: API Gateway ID
+        default: your-api-id
+      region:
+        description: AWS Region
+        default: us-east-1
+      stage:
+        description: API Stage
+        default: prod
+
+components:
+  schemas:
+    Song:
+      type: object
+      required:
+        - title
+        - artist
+      properties:
+        song_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the song
+          readOnly: true
+        title:
+          type: string
+          description: Title of the song
+          example: "21 Wairaitirai Suntarai snippet-?"
+        artist:
+          type: string
+          description: Artist who performed the song
+          example: "Muse"
+        album:
+          type: string
+          description: Album name
+          example: "Muse"
+        bpm:
+          type: string
+          description: Beats per minute of the song
+          example: "120"
+        composer:
+          type: string
+          description: Composer of the song
+          example: "Allah"
+        version:
+          type: string
+          description: Version or variation of the song
+          example: "del Tiempo"
+        date:
+          type: string
+          format: date-time
+          description: Date associated with the song
+          example: "2012-04-06 09:36:00"
+        filename:
+          type: string
+          description: Name of the song file
+          example: "21_wairaitirai_suntarai_snippet-_.mp3"
+        filepath:
+          type: string
+          description: Path to the song file
+          example: "Media.localized/21_wairaitirai_suntarai_snippet-_.mp3"
+        description:
+          type: string
+          description: Additional description or notes about the song
+          example: ""
+        lineage:
+          type: array
+          description: Track history or related songs
+          items:
+            type: string
+          example: []
+    
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        status_code:
+          type: integer
+          description: HTTP status code
+
+paths:
+  /songs:
+    get:
+      summary: List all songs
+      description: Retrieves a list of all songs in the database
+      operationId: listSongs
+      responses:
+        '200':
+          description: List of songs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Song'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create a new song
+      description: Creates a new song with the provided data
+      operationId: createSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Song'
+      responses:
+        '201':
+          description: Song created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /songs/{song_id}:
+    parameters:
+      - name: song_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the song to operate on
+    
+    get:
+      summary: Get a specific song
+      description: Retrieves a specific song by its ID
+      operationId: getSong
+      responses:
+        '200':
+          description: Song retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '404':
+          description: Song not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      summary: Update a song
+      description: Updates an existing song with the provided data
+      operationId: updateSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Song'
+      responses:
+        '200':
+          description: Song updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Song not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      summary: Delete a song
+      description: Deletes a specific song by its ID
+      operationId: deleteSong
+      responses:
+        '204':
+          description: Song deleted successfully
+        '404':
+          description: Song not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key 
