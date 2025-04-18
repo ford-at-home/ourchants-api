@@ -172,3 +172,28 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# AWS CDK
+cdk.out/
+.cdk.staging/
+cdktf.out/
+infrastructure/cdk.out/*
+
+# Logs
+*.log
+
+# Local development
+.DS_Store

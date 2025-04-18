@@ -1,8 +1,10 @@
 from aws_cdk import (
     Stack,
     aws_lambda as lambda_,
-    aws_apigateway as apigw,
-    CfnOutput
+    aws_apigatewayv2 as apigw,
+    aws_apigatewayv2_integrations as integrations,
+    CfnOutput,
+    Duration
 )
 from constructs import Construct
 from .db_stack import DatabaseStack
@@ -29,51 +31,58 @@ class ApiStack(Stack):
         # Grant Lambda function access to DynamoDB table
         db_stack.table.grant_read_write_data(function)
 
-        # Create API Gateway
-        api = apigw.RestApi(
-            self, "SongsApi",
-            description="API for managing songs"
+        # Create HTTP API with CORS enabled
+        api = apigw.HttpApi(
+            self, "SongsHttpApi",
+            description="HTTP API for managing songs",
+            cors_preflight=apigw.CorsPreflightOptions(
+                allow_origins=["http://ourchants-website.s3-website-us-east-1.amazonaws.com"],
+                allow_methods=[apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST, 
+                             apigw.CorsHttpMethod.PUT, apigw.CorsHttpMethod.DELETE],
+                allow_headers=["Content-Type", "Accept"],
+                max_age=Duration.seconds(3000)
+            )
         )
 
-        # Create API resources and methods
-        songs = api.root.add_resource("songs")
-        
-        # GET /songs
-        songs.add_method(
-            "GET",
-            apigw.LambdaIntegration(function)
-        )
-        
-        # POST /songs
-        songs.add_method(
-            "POST",
-            apigw.LambdaIntegration(function)
+        # Create Lambda integration
+        lambda_integration = integrations.HttpLambdaIntegration(
+            "LambdaIntegration",
+            function
         )
 
-        # Individual song resource
-        song = songs.add_resource("{song_id}")
-        
-        # GET /songs/{song_id}
-        song.add_method(
-            "GET",
-            apigw.LambdaIntegration(function)
-        )
-        
-        # PUT /songs/{song_id}
-        song.add_method(
-            "PUT",
-            apigw.LambdaIntegration(function)
-        )
-        
-        # DELETE /songs/{song_id}
-        song.add_method(
-            "DELETE",
-            apigw.LambdaIntegration(function)
+        # Add routes
+        api.add_routes(
+            path="/songs",
+            methods=[apigw.HttpMethod.GET],
+            integration=lambda_integration
         )
 
-        # Export API endpoint
+        api.add_routes(
+            path="/songs",
+            methods=[apigw.HttpMethod.POST],
+            integration=lambda_integration
+        )
+
+        api.add_routes(
+            path="/songs/{song_id}",
+            methods=[apigw.HttpMethod.GET],
+            integration=lambda_integration
+        )
+
+        api.add_routes(
+            path="/songs/{song_id}",
+            methods=[apigw.HttpMethod.PUT],
+            integration=lambda_integration
+        )
+
+        api.add_routes(
+            path="/songs/{song_id}",
+            methods=[apigw.HttpMethod.DELETE],
+            integration=lambda_integration
+        )
+
+        # Output the API URL
         CfnOutput(
-            self, "ApiEndpoint",
-            value=api.url,
-            description="URL of the API Gateway"
+            self, "ApiUrl",
+            value=api.url
         ) 

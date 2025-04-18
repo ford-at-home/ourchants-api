@@ -96,7 +96,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/a279c72223d1817a9da9555903ac69e29244bc233356559fb200742d1b8e7586.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/7585d897c5cdd6cf243e472ffb789a089be5c4c35381889af46704bd0345922a.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -131,136 +131,88 @@
             "data": "SongsLambda1C3C9254"
           }
         ],
-        "/ApiStack/SongsApi/Resource": [
+        "/ApiStack/SongsHttpApi/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApi2ADAB318"
+            "data": "SongsHttpApiB8BB25F9"
           }
         ],
-        "/ApiStack/SongsApi/Deployment/Resource": [
+        "/ApiStack/SongsHttpApi/DefaultStage/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApiDeployment3F40F170bc3115b36d0f219c3171db8d25ff96ac"
+            "data": "SongsHttpApiDefaultStage9937F8FF"
           }
         ],
-        "/ApiStack/SongsApi/DeploymentStage.prod/Resource": [
+        "/ApiStack/SongsHttpApi/GET--songs/LambdaIntegration/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApiDeploymentStageprod023636B5"
+            "data": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
           }
         ],
-        "/ApiStack/SongsApi/Endpoint": [
+        "/ApiStack/SongsHttpApi/GET--songs/LambdaIntegration-Permission": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApiEndpoint7DF87985"
+            "data": "SongsHttpApiGETsongsLambdaIntegrationPermission887E8E8F"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/Resource": [
+        "/ApiStack/SongsHttpApi/GET--songs/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsF86F2D4D"
+            "data": "SongsHttpApiGETsongs5D9286A8"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs": [
+        "/ApiStack/SongsHttpApi/POST--songs/LambdaIntegration-Permission": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsGETApiPermissionApiStackSongsApiF8318EB0GETsongs4B1C6E5E"
+            "data": "SongsHttpApiPOSTsongsLambdaIntegrationPermission16254060"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs": [
+        "/ApiStack/SongsHttpApi/POST--songs/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsGETApiPermissionTestApiStackSongsApiF8318EB0GETsongs46D21797"
+            "data": "SongsHttpApiPOSTsongs4A44F99C"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/GET/Resource": [
+        "/ApiStack/SongsHttpApi/GET--songs--{song_id}/LambdaIntegration-Permission": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsGET5FD658A0"
+            "data": "SongsHttpApiGETsongssongidLambdaIntegrationPermissionD192CEF9"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/POST/ApiPermission.ApiStackSongsApiF8318EB0.POST..songs": [
+        "/ApiStack/SongsHttpApi/GET--songs--{song_id}/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsPOSTApiPermissionApiStackSongsApiF8318EB0POSTsongs68090FFB"
+            "data": "SongsHttpApiGETsongssongid2A5FF3FA"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/POST/ApiPermission.Test.ApiStackSongsApiF8318EB0.POST..songs": [
+        "/ApiStack/SongsHttpApi/PUT--songs--{song_id}/LambdaIntegration-Permission": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsPOSTApiPermissionTestApiStackSongsApiF8318EB0POSTsongsF0D7E157"
+            "data": "SongsHttpApiPUTsongssongidLambdaIntegrationPermissionB9F2E856"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/POST/Resource": [
+        "/ApiStack/SongsHttpApi/PUT--songs--{song_id}/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongsPOSTE890A8B0"
+            "data": "SongsHttpApiPUTsongssongid8472DC9C"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/Resource": [
+        "/ApiStack/SongsHttpApi/DELETE--songs--{song_id}/LambdaIntegration-Permission": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongid53FF27C2"
+            "data": "SongsHttpApiDELETEsongssongidLambdaIntegrationPermissionC0FD6592"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs.{song_id}": [
+        "/ApiStack/SongsHttpApi/DELETE--songs--{song_id}/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidGETApiPermissionApiStackSongsApiF8318EB0GETsongssongid77C16F53"
+            "data": "SongsHttpApiDELETEsongssongid291064FC"
           }
         ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs.{song_id}": [
+        "/ApiStack/ApiUrl": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidGETApiPermissionTestApiStackSongsApiF8318EB0GETsongssongidE8148018"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/GET/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidGET721DED46"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidPUTApiPermissionApiStackSongsApiF8318EB0PUTsongssongidF0C79928"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.Test.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidPUTApiPermissionTestApiStackSongsApiF8318EB0PUTsongssongid98773933"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/PUT/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidPUTF5A99F33"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidDELETEApiPermissionApiStackSongsApiF8318EB0DELETEsongssongidD55C238B"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.Test.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidDELETEApiPermissionTestApiStackSongsApiF8318EB0DELETEsongssongid3D4C2C5B"
-          }
-        ],
-        "/ApiStack/SongsApi/Default/songs/{song_id}/DELETE/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "SongsApisongssongidDELETE5928C0E4"
-          }
-        ],
-        "/ApiStack/ApiEndpoint": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "ApiEndpoint"
+            "data": "ApiUrl"
           }
         ],
         "/ApiStack/CDKMetadata/Default": [

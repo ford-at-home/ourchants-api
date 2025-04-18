@@ -292,7 +292,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
                       },
-                      "s3Key": "c0763cf551df02699604e3070cb42ce54153c9575c865512e9dfc10acfca1452.zip"
+                      "s3Key": "ef4e7917b2ee2e83fc9f0e3a89b0cbb2af5105567866cc870819d118a03afa00.zip"
                     },
                     "environment": {
                       "variables": {
@@ -323,883 +323,521 @@
               "metadata": []
             }
           },
-          "SongsApi": {
-            "id": "SongsApi",
-            "path": "ApiStack/SongsApi",
+          "SongsHttpApi": {
+            "id": "SongsHttpApi",
+            "path": "ApiStack/SongsHttpApi",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "ApiStack/SongsApi/Resource",
+                "path": "ApiStack/SongsHttpApi/Resource",
                 "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::RestApi",
+                  "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Api",
                   "aws:cdk:cloudformation:props": {
-                    "description": "API for managing songs",
-                    "name": "SongsApi"
+                    "corsConfiguration": {
+                      "allowHeaders": [
+                        "Content-Type",
+                        "Accept"
+                      ],
+                      "allowMethods": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE"
+                      ],
+                      "allowOrigins": [
+                        "http://ourchants-website.s3-website-us-east-1.amazonaws.com"
+                      ],
+                      "maxAge": 3000
+                    },
+                    "description": "HTTP API for managing songs",
+                    "name": "SongsHttpApi",
+                    "protocolType": "HTTP"
                   }
                 },
                 "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_apigateway.CfnRestApi",
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnApi",
                   "version": "2.183.0"
                 }
               },
-              "Deployment": {
-                "id": "Deployment",
-                "path": "ApiStack/SongsApi/Deployment",
+              "DefaultStage": {
+                "id": "DefaultStage",
+                "path": "ApiStack/SongsHttpApi/DefaultStage",
                 "children": {
                   "Resource": {
                     "id": "Resource",
-                    "path": "ApiStack/SongsApi/Deployment/Resource",
+                    "path": "ApiStack/SongsHttpApi/DefaultStage/Resource",
                     "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::Deployment",
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Stage",
                       "aws:cdk:cloudformation:props": {
-                        "description": "API for managing songs",
-                        "restApiId": {
-                          "Ref": "SongsApi2ADAB318"
-                        }
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "autoDeploy": true,
+                        "stageName": "$default"
                       }
                     },
                     "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_apigateway.CfnDeployment",
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnStage",
                       "version": "2.183.0"
                     }
                   }
                 },
                 "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_apigateway.Deployment",
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpStage",
                   "version": "2.183.0",
                   "metadata": []
                 }
               },
-              "DeploymentStage.prod": {
-                "id": "DeploymentStage.prod",
-                "path": "ApiStack/SongsApi/DeploymentStage.prod",
+              "GET--songs": {
+                "id": "GET--songs",
+                "path": "ApiStack/SongsHttpApi/GET--songs",
                 "children": {
-                  "Resource": {
-                    "id": "Resource",
-                    "path": "ApiStack/SongsApi/DeploymentStage.prod/Resource",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::Stage",
-                      "aws:cdk:cloudformation:props": {
-                        "deploymentId": {
-                          "Ref": "SongsApiDeployment3F40F170bc3115b36d0f219c3171db8d25ff96ac"
-                        },
-                        "restApiId": {
-                          "Ref": "SongsApi2ADAB318"
-                        },
-                        "stageName": "prod"
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_apigateway.CfnStage",
-                      "version": "2.183.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_apigateway.Stage",
-                  "version": "2.183.0",
-                  "metadata": []
-                }
-              },
-              "Endpoint": {
-                "id": "Endpoint",
-                "path": "ApiStack/SongsApi/Endpoint",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CfnOutput",
-                  "version": "2.183.0"
-                }
-              },
-              "Default": {
-                "id": "Default",
-                "path": "ApiStack/SongsApi/Default",
-                "children": {
-                  "songs": {
-                    "id": "songs",
-                    "path": "ApiStack/SongsApi/Default/songs",
+                  "LambdaIntegration": {
+                    "id": "LambdaIntegration",
+                    "path": "ApiStack/SongsHttpApi/GET--songs/LambdaIntegration",
                     "children": {
                       "Resource": {
                         "id": "Resource",
-                        "path": "ApiStack/SongsApi/Default/songs/Resource",
+                        "path": "ApiStack/SongsHttpApi/GET--songs/LambdaIntegration/Resource",
                         "attributes": {
-                          "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
+                          "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Integration",
                           "aws:cdk:cloudformation:props": {
-                            "parentId": {
+                            "apiId": {
+                              "Ref": "SongsHttpApiB8BB25F9"
+                            },
+                            "integrationType": "AWS_PROXY",
+                            "integrationUri": {
                               "Fn::GetAtt": [
-                                "SongsApi2ADAB318",
-                                "RootResourceId"
+                                "SongsLambda1C3C9254",
+                                "Arn"
                               ]
                             },
-                            "pathPart": "songs",
-                            "restApiId": {
-                              "Ref": "SongsApi2ADAB318"
-                            }
+                            "payloadFormatVersion": "2.0"
                           }
                         },
                         "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
+                          "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnIntegration",
                           "version": "2.183.0"
-                        }
-                      },
-                      "GET": {
-                        "id": "GET",
-                        "path": "ApiStack/SongsApi/Default/songs/GET",
-                        "children": {
-                          "ApiPermission.ApiStackSongsApiF8318EB0.GET..songs": {
-                            "id": "ApiPermission.ApiStackSongsApiF8318EB0.GET..songs",
-                            "path": "ApiStack/SongsApi/Default/songs/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                              "aws:cdk:cloudformation:props": {
-                                "action": "lambda:InvokeFunction",
-                                "functionName": {
-                                  "Fn::GetAtt": [
-                                    "SongsLambda1C3C9254",
-                                    "Arn"
-                                  ]
-                                },
-                                "principal": "apigateway.amazonaws.com",
-                                "sourceArn": {
-                                  "Fn::Join": [
-                                    "",
-                                    [
-                                      "arn:",
-                                      {
-                                        "Ref": "AWS::Partition"
-                                      },
-                                      ":execute-api:us-east-1:",
-                                      {
-                                        "Ref": "AWS::AccountId"
-                                      },
-                                      ":",
-                                      {
-                                        "Ref": "SongsApi2ADAB318"
-                                      },
-                                      "/",
-                                      {
-                                        "Ref": "SongsApiDeploymentStageprod023636B5"
-                                      },
-                                      "/GET/songs"
-                                    ]
-                                  ]
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                              "version": "2.183.0"
-                            }
-                          },
-                          "ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs": {
-                            "id": "ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs",
-                            "path": "ApiStack/SongsApi/Default/songs/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                              "aws:cdk:cloudformation:props": {
-                                "action": "lambda:InvokeFunction",
-                                "functionName": {
-                                  "Fn::GetAtt": [
-                                    "SongsLambda1C3C9254",
-                                    "Arn"
-                                  ]
-                                },
-                                "principal": "apigateway.amazonaws.com",
-                                "sourceArn": {
-                                  "Fn::Join": [
-                                    "",
-                                    [
-                                      "arn:",
-                                      {
-                                        "Ref": "AWS::Partition"
-                                      },
-                                      ":execute-api:us-east-1:",
-                                      {
-                                        "Ref": "AWS::AccountId"
-                                      },
-                                      ":",
-                                      {
-                                        "Ref": "SongsApi2ADAB318"
-                                      },
-                                      "/test-invoke-stage/GET/songs"
-                                    ]
-                                  ]
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                              "version": "2.183.0"
-                            }
-                          },
-                          "Resource": {
-                            "id": "Resource",
-                            "path": "ApiStack/SongsApi/Default/songs/GET/Resource",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
-                              "aws:cdk:cloudformation:props": {
-                                "authorizationType": "NONE",
-                                "httpMethod": "GET",
-                                "integration": {
-                                  "type": "AWS_PROXY",
-                                  "uri": {
-                                    "Fn::Join": [
-                                      "",
-                                      [
-                                        "arn:",
-                                        {
-                                          "Ref": "AWS::Partition"
-                                        },
-                                        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-                                        {
-                                          "Fn::GetAtt": [
-                                            "SongsLambda1C3C9254",
-                                            "Arn"
-                                          ]
-                                        },
-                                        "/invocations"
-                                      ]
-                                    ]
-                                  },
-                                  "integrationHttpMethod": "POST"
-                                },
-                                "resourceId": {
-                                  "Ref": "SongsApisongsF86F2D4D"
-                                },
-                                "restApiId": {
-                                  "Ref": "SongsApi2ADAB318"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
-                              "version": "2.183.0"
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_apigateway.Method",
-                          "version": "2.183.0",
-                          "metadata": []
-                        }
-                      },
-                      "POST": {
-                        "id": "POST",
-                        "path": "ApiStack/SongsApi/Default/songs/POST",
-                        "children": {
-                          "ApiPermission.ApiStackSongsApiF8318EB0.POST..songs": {
-                            "id": "ApiPermission.ApiStackSongsApiF8318EB0.POST..songs",
-                            "path": "ApiStack/SongsApi/Default/songs/POST/ApiPermission.ApiStackSongsApiF8318EB0.POST..songs",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                              "aws:cdk:cloudformation:props": {
-                                "action": "lambda:InvokeFunction",
-                                "functionName": {
-                                  "Fn::GetAtt": [
-                                    "SongsLambda1C3C9254",
-                                    "Arn"
-                                  ]
-                                },
-                                "principal": "apigateway.amazonaws.com",
-                                "sourceArn": {
-                                  "Fn::Join": [
-                                    "",
-                                    [
-                                      "arn:",
-                                      {
-                                        "Ref": "AWS::Partition"
-                                      },
-                                      ":execute-api:us-east-1:",
-                                      {
-                                        "Ref": "AWS::AccountId"
-                                      },
-                                      ":",
-                                      {
-                                        "Ref": "SongsApi2ADAB318"
-                                      },
-                                      "/",
-                                      {
-                                        "Ref": "SongsApiDeploymentStageprod023636B5"
-                                      },
-                                      "/POST/songs"
-                                    ]
-                                  ]
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                              "version": "2.183.0"
-                            }
-                          },
-                          "ApiPermission.Test.ApiStackSongsApiF8318EB0.POST..songs": {
-                            "id": "ApiPermission.Test.ApiStackSongsApiF8318EB0.POST..songs",
-                            "path": "ApiStack/SongsApi/Default/songs/POST/ApiPermission.Test.ApiStackSongsApiF8318EB0.POST..songs",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                              "aws:cdk:cloudformation:props": {
-                                "action": "lambda:InvokeFunction",
-                                "functionName": {
-                                  "Fn::GetAtt": [
-                                    "SongsLambda1C3C9254",
-                                    "Arn"
-                                  ]
-                                },
-                                "principal": "apigateway.amazonaws.com",
-                                "sourceArn": {
-                                  "Fn::Join": [
-                                    "",
-                                    [
-                                      "arn:",
-                                      {
-                                        "Ref": "AWS::Partition"
-                                      },
-                                      ":execute-api:us-east-1:",
-                                      {
-                                        "Ref": "AWS::AccountId"
-                                      },
-                                      ":",
-                                      {
-                                        "Ref": "SongsApi2ADAB318"
-                                      },
-                                      "/test-invoke-stage/POST/songs"
-                                    ]
-                                  ]
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                              "version": "2.183.0"
-                            }
-                          },
-                          "Resource": {
-                            "id": "Resource",
-                            "path": "ApiStack/SongsApi/Default/songs/POST/Resource",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
-                              "aws:cdk:cloudformation:props": {
-                                "authorizationType": "NONE",
-                                "httpMethod": "POST",
-                                "integration": {
-                                  "type": "AWS_PROXY",
-                                  "uri": {
-                                    "Fn::Join": [
-                                      "",
-                                      [
-                                        "arn:",
-                                        {
-                                          "Ref": "AWS::Partition"
-                                        },
-                                        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-                                        {
-                                          "Fn::GetAtt": [
-                                            "SongsLambda1C3C9254",
-                                            "Arn"
-                                          ]
-                                        },
-                                        "/invocations"
-                                      ]
-                                    ]
-                                  },
-                                  "integrationHttpMethod": "POST"
-                                },
-                                "resourceId": {
-                                  "Ref": "SongsApisongsF86F2D4D"
-                                },
-                                "restApiId": {
-                                  "Ref": "SongsApi2ADAB318"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
-                              "version": "2.183.0"
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_apigateway.Method",
-                          "version": "2.183.0",
-                          "metadata": []
-                        }
-                      },
-                      "{song_id}": {
-                        "id": "{song_id}",
-                        "path": "ApiStack/SongsApi/Default/songs/{song_id}",
-                        "children": {
-                          "Resource": {
-                            "id": "Resource",
-                            "path": "ApiStack/SongsApi/Default/songs/{song_id}/Resource",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
-                              "aws:cdk:cloudformation:props": {
-                                "parentId": {
-                                  "Ref": "SongsApisongsF86F2D4D"
-                                },
-                                "pathPart": "{song_id}",
-                                "restApiId": {
-                                  "Ref": "SongsApi2ADAB318"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
-                              "version": "2.183.0"
-                            }
-                          },
-                          "GET": {
-                            "id": "GET",
-                            "path": "ApiStack/SongsApi/Default/songs/{song_id}/GET",
-                            "children": {
-                              "ApiPermission.ApiStackSongsApiF8318EB0.GET..songs.{song_id}": {
-                                "id": "ApiPermission.ApiStackSongsApiF8318EB0.GET..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/",
-                                          {
-                                            "Ref": "SongsApiDeploymentStageprod023636B5"
-                                          },
-                                          "/GET/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs.{song_id}": {
-                                "id": "ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/test-invoke-stage/GET/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "Resource": {
-                                "id": "Resource",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/Resource",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
-                                  "aws:cdk:cloudformation:props": {
-                                    "authorizationType": "NONE",
-                                    "httpMethod": "GET",
-                                    "integration": {
-                                      "type": "AWS_PROXY",
-                                      "uri": {
-                                        "Fn::Join": [
-                                          "",
-                                          [
-                                            "arn:",
-                                            {
-                                              "Ref": "AWS::Partition"
-                                            },
-                                            ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-                                            {
-                                              "Fn::GetAtt": [
-                                                "SongsLambda1C3C9254",
-                                                "Arn"
-                                              ]
-                                            },
-                                            "/invocations"
-                                          ]
-                                        ]
-                                      },
-                                      "integrationHttpMethod": "POST"
-                                    },
-                                    "resourceId": {
-                                      "Ref": "SongsApisongssongid53FF27C2"
-                                    },
-                                    "restApiId": {
-                                      "Ref": "SongsApi2ADAB318"
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
-                                  "version": "2.183.0"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
-                              "version": "2.183.0",
-                              "metadata": []
-                            }
-                          },
-                          "PUT": {
-                            "id": "PUT",
-                            "path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT",
-                            "children": {
-                              "ApiPermission.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}": {
-                                "id": "ApiPermission.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/",
-                                          {
-                                            "Ref": "SongsApiDeploymentStageprod023636B5"
-                                          },
-                                          "/PUT/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "ApiPermission.Test.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}": {
-                                "id": "ApiPermission.Test.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.Test.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/test-invoke-stage/PUT/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "Resource": {
-                                "id": "Resource",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/Resource",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
-                                  "aws:cdk:cloudformation:props": {
-                                    "authorizationType": "NONE",
-                                    "httpMethod": "PUT",
-                                    "integration": {
-                                      "type": "AWS_PROXY",
-                                      "uri": {
-                                        "Fn::Join": [
-                                          "",
-                                          [
-                                            "arn:",
-                                            {
-                                              "Ref": "AWS::Partition"
-                                            },
-                                            ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-                                            {
-                                              "Fn::GetAtt": [
-                                                "SongsLambda1C3C9254",
-                                                "Arn"
-                                              ]
-                                            },
-                                            "/invocations"
-                                          ]
-                                        ]
-                                      },
-                                      "integrationHttpMethod": "POST"
-                                    },
-                                    "resourceId": {
-                                      "Ref": "SongsApisongssongid53FF27C2"
-                                    },
-                                    "restApiId": {
-                                      "Ref": "SongsApi2ADAB318"
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
-                                  "version": "2.183.0"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
-                              "version": "2.183.0",
-                              "metadata": []
-                            }
-                          },
-                          "DELETE": {
-                            "id": "DELETE",
-                            "path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE",
-                            "children": {
-                              "ApiPermission.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}": {
-                                "id": "ApiPermission.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/",
-                                          {
-                                            "Ref": "SongsApiDeploymentStageprod023636B5"
-                                          },
-                                          "/DELETE/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "ApiPermission.Test.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}": {
-                                "id": "ApiPermission.Test.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.Test.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
-                                  "aws:cdk:cloudformation:props": {
-                                    "action": "lambda:InvokeFunction",
-                                    "functionName": {
-                                      "Fn::GetAtt": [
-                                        "SongsLambda1C3C9254",
-                                        "Arn"
-                                      ]
-                                    },
-                                    "principal": "apigateway.amazonaws.com",
-                                    "sourceArn": {
-                                      "Fn::Join": [
-                                        "",
-                                        [
-                                          "arn:",
-                                          {
-                                            "Ref": "AWS::Partition"
-                                          },
-                                          ":execute-api:us-east-1:",
-                                          {
-                                            "Ref": "AWS::AccountId"
-                                          },
-                                          ":",
-                                          {
-                                            "Ref": "SongsApi2ADAB318"
-                                          },
-                                          "/test-invoke-stage/DELETE/songs/*"
-                                        ]
-                                      ]
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
-                                  "version": "2.183.0"
-                                }
-                              },
-                              "Resource": {
-                                "id": "Resource",
-                                "path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/Resource",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
-                                  "aws:cdk:cloudformation:props": {
-                                    "authorizationType": "NONE",
-                                    "httpMethod": "DELETE",
-                                    "integration": {
-                                      "type": "AWS_PROXY",
-                                      "uri": {
-                                        "Fn::Join": [
-                                          "",
-                                          [
-                                            "arn:",
-                                            {
-                                              "Ref": "AWS::Partition"
-                                            },
-                                            ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-                                            {
-                                              "Fn::GetAtt": [
-                                                "SongsLambda1C3C9254",
-                                                "Arn"
-                                              ]
-                                            },
-                                            "/invocations"
-                                          ]
-                                        ]
-                                      },
-                                      "integrationHttpMethod": "POST"
-                                    },
-                                    "resourceId": {
-                                      "Ref": "SongsApisongssongid53FF27C2"
-                                    },
-                                    "restApiId": {
-                                      "Ref": "SongsApi2ADAB318"
-                                    }
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
-                                  "version": "2.183.0"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
-                              "version": "2.183.0",
-                              "metadata": []
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_apigateway.Resource",
-                          "version": "2.183.0",
-                          "metadata": []
                         }
                       }
                     },
                     "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_apigateway.Resource",
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpIntegration",
                       "version": "2.183.0",
                       "metadata": []
+                    }
+                  },
+                  "LambdaIntegration-Permission": {
+                    "id": "LambdaIntegration-Permission",
+                    "path": "ApiStack/SongsHttpApi/GET--songs/LambdaIntegration-Permission",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                      "aws:cdk:cloudformation:props": {
+                        "action": "lambda:InvokeFunction",
+                        "functionName": {
+                          "Fn::GetAtt": [
+                            "SongsLambda1C3C9254",
+                            "Arn"
+                          ]
+                        },
+                        "principal": "apigateway.amazonaws.com",
+                        "sourceArn": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":execute-api:us-east-1:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              ":",
+                              {
+                                "Ref": "SongsHttpApiB8BB25F9"
+                              },
+                              "/*/*/songs"
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                      "version": "2.183.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "ApiStack/SongsHttpApi/GET--songs/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "authorizationType": "NONE",
+                        "routeKey": "GET /songs",
+                        "target": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "integrations/",
+                              {
+                                "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnRoute",
+                      "version": "2.183.0"
                     }
                   }
                 },
                 "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_apigateway.ResourceBase",
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpRoute",
+                  "version": "2.183.0",
+                  "metadata": []
+                }
+              },
+              "POST--songs": {
+                "id": "POST--songs",
+                "path": "ApiStack/SongsHttpApi/POST--songs",
+                "children": {
+                  "LambdaIntegration-Permission": {
+                    "id": "LambdaIntegration-Permission",
+                    "path": "ApiStack/SongsHttpApi/POST--songs/LambdaIntegration-Permission",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                      "aws:cdk:cloudformation:props": {
+                        "action": "lambda:InvokeFunction",
+                        "functionName": {
+                          "Fn::GetAtt": [
+                            "SongsLambda1C3C9254",
+                            "Arn"
+                          ]
+                        },
+                        "principal": "apigateway.amazonaws.com",
+                        "sourceArn": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":execute-api:us-east-1:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              ":",
+                              {
+                                "Ref": "SongsHttpApiB8BB25F9"
+                              },
+                              "/*/*/songs"
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                      "version": "2.183.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "ApiStack/SongsHttpApi/POST--songs/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "authorizationType": "NONE",
+                        "routeKey": "POST /songs",
+                        "target": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "integrations/",
+                              {
+                                "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnRoute",
+                      "version": "2.183.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpRoute",
+                  "version": "2.183.0",
+                  "metadata": []
+                }
+              },
+              "GET--songs--{song_id}": {
+                "id": "GET--songs--{song_id}",
+                "path": "ApiStack/SongsHttpApi/GET--songs--{song_id}",
+                "children": {
+                  "LambdaIntegration-Permission": {
+                    "id": "LambdaIntegration-Permission",
+                    "path": "ApiStack/SongsHttpApi/GET--songs--{song_id}/LambdaIntegration-Permission",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                      "aws:cdk:cloudformation:props": {
+                        "action": "lambda:InvokeFunction",
+                        "functionName": {
+                          "Fn::GetAtt": [
+                            "SongsLambda1C3C9254",
+                            "Arn"
+                          ]
+                        },
+                        "principal": "apigateway.amazonaws.com",
+                        "sourceArn": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":execute-api:us-east-1:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              ":",
+                              {
+                                "Ref": "SongsHttpApiB8BB25F9"
+                              },
+                              "/*/*/songs/{song_id}"
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                      "version": "2.183.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "ApiStack/SongsHttpApi/GET--songs--{song_id}/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "authorizationType": "NONE",
+                        "routeKey": "GET /songs/{song_id}",
+                        "target": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "integrations/",
+                              {
+                                "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnRoute",
+                      "version": "2.183.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpRoute",
+                  "version": "2.183.0",
+                  "metadata": []
+                }
+              },
+              "PUT--songs--{song_id}": {
+                "id": "PUT--songs--{song_id}",
+                "path": "ApiStack/SongsHttpApi/PUT--songs--{song_id}",
+                "children": {
+                  "LambdaIntegration-Permission": {
+                    "id": "LambdaIntegration-Permission",
+                    "path": "ApiStack/SongsHttpApi/PUT--songs--{song_id}/LambdaIntegration-Permission",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                      "aws:cdk:cloudformation:props": {
+                        "action": "lambda:InvokeFunction",
+                        "functionName": {
+                          "Fn::GetAtt": [
+                            "SongsLambda1C3C9254",
+                            "Arn"
+                          ]
+                        },
+                        "principal": "apigateway.amazonaws.com",
+                        "sourceArn": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":execute-api:us-east-1:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              ":",
+                              {
+                                "Ref": "SongsHttpApiB8BB25F9"
+                              },
+                              "/*/*/songs/{song_id}"
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                      "version": "2.183.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "ApiStack/SongsHttpApi/PUT--songs--{song_id}/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "authorizationType": "NONE",
+                        "routeKey": "PUT /songs/{song_id}",
+                        "target": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "integrations/",
+                              {
+                                "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnRoute",
+                      "version": "2.183.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpRoute",
+                  "version": "2.183.0",
+                  "metadata": []
+                }
+              },
+              "DELETE--songs--{song_id}": {
+                "id": "DELETE--songs--{song_id}",
+                "path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}",
+                "children": {
+                  "LambdaIntegration-Permission": {
+                    "id": "LambdaIntegration-Permission",
+                    "path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}/LambdaIntegration-Permission",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                      "aws:cdk:cloudformation:props": {
+                        "action": "lambda:InvokeFunction",
+                        "functionName": {
+                          "Fn::GetAtt": [
+                            "SongsLambda1C3C9254",
+                            "Arn"
+                          ]
+                        },
+                        "principal": "apigateway.amazonaws.com",
+                        "sourceArn": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":execute-api:us-east-1:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              ":",
+                              {
+                                "Ref": "SongsHttpApiB8BB25F9"
+                              },
+                              "/*/*/songs/{song_id}"
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                      "version": "2.183.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ApiGatewayV2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "apiId": {
+                          "Ref": "SongsHttpApiB8BB25F9"
+                        },
+                        "authorizationType": "NONE",
+                        "routeKey": "DELETE /songs/{song_id}",
+                        "target": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "integrations/",
+                              {
+                                "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigatewayv2.CfnRoute",
+                      "version": "2.183.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpRoute",
                   "version": "2.183.0",
                   "metadata": []
                 }
               }
             },
             "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_apigateway.RestApi",
+              "fqn": "aws-cdk-lib.aws_apigatewayv2.HttpApi",
               "version": "2.183.0",
               "metadata": []
             }
           },
-          "ApiEndpoint": {
-            "id": "ApiEndpoint",
-            "path": "ApiStack/ApiEndpoint",
+          "ApiUrl": {
+            "id": "ApiUrl",
+            "path": "ApiStack/ApiUrl",
             "constructInfo": {
               "fqn": "aws-cdk-lib.CfnOutput",
               "version": "2.183.0"

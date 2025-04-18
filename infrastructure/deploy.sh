@@ -1,37 +1,72 @@
 #!/bin/bash
+set -ex
 
-# Exit on error
-set -e
+# ===== Path Setup =====
+# Get the absolute path of the infrastructure directory
+INFRA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$INFRA_DIR")"
 
-# Create and activate virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
+echo "=== Directory Structure ==="
+echo "Root Directory: $ROOT_DIR"
+echo "Infrastructure Directory: $INFRA_DIR"
+
+# ===== Environment Setup =====
+# Set up Python path to include both root and infrastructure directories
+export PYTHONPATH="$ROOT_DIR:$INFRA_DIR:$PYTHONPATH"
+echo "PYTHONPATH: $PYTHONPATH"
+
+# ===== Virtual Environment =====
+VENV_DIR="$INFRA_DIR/.venv"
+echo "=== Setting up Virtual Environment ==="
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR"
 fi
-source venv/bin/activate
+source "$VENV_DIR/bin/activate"
 
-# Install dependencies
-pip install -q -r requirements.txt
+# ===== Dependencies =====
+echo "=== Installing Dependencies ==="
+# Upgrade pip first
+pip install --upgrade pip
 
-# Get AWS account info
+# Install infrastructure dependencies
+pip install -r "$INFRA_DIR/requirements.txt" -v
+
+# Install API dependencies if requirements.txt exists
+if [ -f "$ROOT_DIR/api/requirements.txt" ]; then
+    pip install -r "$ROOT_DIR/api/requirements.txt" -v
+fi
+
+# ===== AWS Configuration =====
+echo "=== AWS Configuration ==="
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-AWS_REGION="us-east-1"
+AWS_REGION=$(aws configure get region || echo "us-east-1")
+echo "Account ID: ${AWS_ACCOUNT_ID}"
+echo "Region: ${AWS_REGION}"
 
-# Set up Python path
-export PYTHONPATH=$PYTHONPATH:$(pwd)/..
+# ===== CDK Bootstrap =====
+echo "=== Bootstrapping CDK ==="
+cd "$INFRA_DIR"
+cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION} --verbose
 
-# Bootstrap CDK (if needed)
-cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION} 2>/dev/null || true
+# ===== Deployment =====
+echo "=== Deploying Stacks ==="
 
-# Deploy stacks
-echo "Deploying Database Stack..."
-cdk deploy DatabaseStack --require-approval never --outputs-file database-outputs.json
+# Deploy Database Stack
+echo "=== Deploying Database Stack ==="
+cdk deploy DatabaseStack --require-approval never -v
 
-echo "Deploying API Stack..."
-cdk deploy ApiStack --require-approval never --outputs-file api-outputs.json
+# Deploy API Stack
+echo "=== Deploying API Stack ==="
+cdk deploy ApiStack --require-approval never -v
 
-# Display outputs
-echo -e "\nAPI Endpoint:"
-cat api-outputs.json | grep -o '"ApiEndpoint": "[^"]*' | cut -d'"' -f4
+# ===== Verification =====
+echo "=== Verifying Deployment ==="
+cdk synth
 
-# Cleanup
-rm -f database-outputs.json api-outputs.json 
+echo "=== Deployment Complete ==="
+echo "Timestamp: $(date)"
+echo "Working Directory: $(pwd)"
+echo "Python Path: $PYTHONPATH"
+
+# Silence JSII warnings about Node.js version
+export JSII_SILENCE_WARNING_DEPRECATED_NODE_VERSION=1 

@@ -85,7 +85,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
      },
-     "S3Key": "c0763cf551df02699604e3070cb42ce54153c9575c865512e9dfc10acfca1452.zip"
+     "S3Key": "ef4e7917b2ee2e83fc9f0e3a89b0cbb2af5105567866cc870819d118a03afa00.zip"
     },
     "Environment": {
      "Variables": {
@@ -109,76 +109,71 @@
    ],
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsLambda/Resource",
-    "aws:asset:path": "asset.c0763cf551df02699604e3070cb42ce54153c9575c865512e9dfc10acfca1452",
+    "aws:asset:path": "asset.ef4e7917b2ee2e83fc9f0e3a89b0cbb2af5105567866cc870819d118a03afa00",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
   },
-  "SongsApi2ADAB318": {
-   "Type": "AWS::ApiGateway::RestApi",
+  "SongsHttpApiB8BB25F9": {
+   "Type": "AWS::ApiGatewayV2::Api",
    "Properties": {
-    "Description": "API for managing songs",
-    "Name": "SongsApi"
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Resource"
-   }
-  },
-  "SongsApiDeployment3F40F170bc3115b36d0f219c3171db8d25ff96ac": {
-   "Type": "AWS::ApiGateway::Deployment",
-   "Properties": {
-    "Description": "API for managing songs",
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
-    }
-   },
-   "DependsOn": [
-    "SongsApisongssongidDELETE5928C0E4",
-    "SongsApisongssongidGET721DED46",
-    "SongsApisongssongidPUTF5A99F33",
-    "SongsApisongssongid53FF27C2",
-    "SongsApisongsGET5FD658A0",
-    "SongsApisongsPOSTE890A8B0",
-    "SongsApisongsF86F2D4D"
-   ],
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Deployment/Resource"
-   }
-  },
-  "SongsApiDeploymentStageprod023636B5": {
-   "Type": "AWS::ApiGateway::Stage",
-   "Properties": {
-    "DeploymentId": {
-     "Ref": "SongsApiDeployment3F40F170bc3115b36d0f219c3171db8d25ff96ac"
+    "CorsConfiguration": {
+     "AllowHeaders": [
+      "Content-Type",
+      "Accept"
+     ],
+     "AllowMethods": [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE"
+     ],
+     "AllowOrigins": [
+      "http://ourchants-website.s3-website-us-east-1.amazonaws.com"
+     ],
+     "MaxAge": 3000
     },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
-    },
-    "StageName": "prod"
+    "Description": "HTTP API for managing songs",
+    "Name": "SongsHttpApi",
+    "ProtocolType": "HTTP"
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/DeploymentStage.prod/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/Resource"
    }
   },
-  "SongsApisongsF86F2D4D": {
-   "Type": "AWS::ApiGateway::Resource",
+  "SongsHttpApiDefaultStage9937F8FF": {
+   "Type": "AWS::ApiGatewayV2::Stage",
    "Properties": {
-    "ParentId": {
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
+    },
+    "AutoDeploy": true,
+    "StageName": "$default"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ApiStack/SongsHttpApi/DefaultStage/Resource"
+   }
+  },
+  "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
      "Fn::GetAtt": [
-      "SongsApi2ADAB318",
-      "RootResourceId"
+      "SongsLambda1C3C9254",
+      "Arn"
      ]
     },
-    "PathPart": "songs",
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
-    }
+    "PayloadFormatVersion": "2.0"
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/GET--songs/LambdaIntegration/Resource"
    }
   },
-  "SongsApisongsGETApiPermissionApiStackSongsApiF8318EB0GETsongs4B1C6E5E": {
+  "SongsHttpApiGETsongsLambdaIntegrationPermission887E8E8F": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -203,97 +198,42 @@
        },
        ":",
        {
-        "Ref": "SongsApi2ADAB318"
+        "Ref": "SongsHttpApiB8BB25F9"
        },
-       "/",
-       {
-        "Ref": "SongsApiDeploymentStageprod023636B5"
-       },
-       "/GET/songs"
+       "/*/*/songs"
       ]
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/GET--songs/LambdaIntegration-Permission"
    }
   },
-  "SongsApisongsGETApiPermissionTestApiStackSongsApiF8318EB0GETsongs46D21797": {
-   "Type": "AWS::Lambda::Permission",
+  "SongsHttpApiGETsongs5D9286A8": {
+   "Type": "AWS::ApiGatewayV2::Route",
    "Properties": {
-    "Action": "lambda:InvokeFunction",
-    "FunctionName": {
-     "Fn::GetAtt": [
-      "SongsLambda1C3C9254",
-      "Arn"
-     ]
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
     },
-    "Principal": "apigateway.amazonaws.com",
-    "SourceArn": {
-     "Fn::Join": [
-      "",
-      [
-       "arn:",
-       {
-        "Ref": "AWS::Partition"
-       },
-       ":execute-api:us-east-1:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "SongsApi2ADAB318"
-       },
-       "/test-invoke-stage/GET/songs"
-      ]
-     ]
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs"
-   }
-  },
-  "SongsApisongsGET5FD658A0": {
-   "Type": "AWS::ApiGateway::Method",
-   "Properties": {
     "AuthorizationType": "NONE",
-    "HttpMethod": "GET",
-    "Integration": {
-     "IntegrationHttpMethod": "POST",
-     "Type": "AWS_PROXY",
-     "Uri": {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "SongsLambda1C3C9254",
-          "Arn"
-         ]
-        },
-        "/invocations"
-       ]
+    "RouteKey": "GET /songs",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
       ]
-     }
-    },
-    "ResourceId": {
-     "Ref": "SongsApisongsF86F2D4D"
-    },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
+     ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/GET/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/GET--songs/Resource"
    }
   },
-  "SongsApisongsPOSTApiPermissionApiStackSongsApiF8318EB0POSTsongs68090FFB": {
+  "SongsHttpApiPOSTsongsLambdaIntegrationPermission16254060": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -318,112 +258,42 @@
        },
        ":",
        {
-        "Ref": "SongsApi2ADAB318"
+        "Ref": "SongsHttpApiB8BB25F9"
        },
-       "/",
-       {
-        "Ref": "SongsApiDeploymentStageprod023636B5"
-       },
-       "/POST/songs"
+       "/*/*/songs"
       ]
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/POST/ApiPermission.ApiStackSongsApiF8318EB0.POST..songs"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/POST--songs/LambdaIntegration-Permission"
    }
   },
-  "SongsApisongsPOSTApiPermissionTestApiStackSongsApiF8318EB0POSTsongsF0D7E157": {
-   "Type": "AWS::Lambda::Permission",
+  "SongsHttpApiPOSTsongs4A44F99C": {
+   "Type": "AWS::ApiGatewayV2::Route",
    "Properties": {
-    "Action": "lambda:InvokeFunction",
-    "FunctionName": {
-     "Fn::GetAtt": [
-      "SongsLambda1C3C9254",
-      "Arn"
-     ]
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
     },
-    "Principal": "apigateway.amazonaws.com",
-    "SourceArn": {
-     "Fn::Join": [
-      "",
-      [
-       "arn:",
-       {
-        "Ref": "AWS::Partition"
-       },
-       ":execute-api:us-east-1:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "SongsApi2ADAB318"
-       },
-       "/test-invoke-stage/POST/songs"
-      ]
-     ]
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/POST/ApiPermission.Test.ApiStackSongsApiF8318EB0.POST..songs"
-   }
-  },
-  "SongsApisongsPOSTE890A8B0": {
-   "Type": "AWS::ApiGateway::Method",
-   "Properties": {
     "AuthorizationType": "NONE",
-    "HttpMethod": "POST",
-    "Integration": {
-     "IntegrationHttpMethod": "POST",
-     "Type": "AWS_PROXY",
-     "Uri": {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "SongsLambda1C3C9254",
-          "Arn"
-         ]
-        },
-        "/invocations"
-       ]
+    "RouteKey": "POST /songs",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
       ]
-     }
-    },
-    "ResourceId": {
-     "Ref": "SongsApisongsF86F2D4D"
-    },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
+     ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/POST/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/POST--songs/Resource"
    }
   },
-  "SongsApisongssongid53FF27C2": {
-   "Type": "AWS::ApiGateway::Resource",
-   "Properties": {
-    "ParentId": {
-     "Ref": "SongsApisongsF86F2D4D"
-    },
-    "PathPart": "{song_id}",
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/Resource"
-   }
-  },
-  "SongsApisongssongidGETApiPermissionApiStackSongsApiF8318EB0GETsongssongid77C16F53": {
+  "SongsHttpApiGETsongssongidLambdaIntegrationPermissionD192CEF9": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -448,97 +318,42 @@
        },
        ":",
        {
-        "Ref": "SongsApi2ADAB318"
+        "Ref": "SongsHttpApiB8BB25F9"
        },
-       "/",
-       {
-        "Ref": "SongsApiDeploymentStageprod023636B5"
-       },
-       "/GET/songs/*"
+       "/*/*/songs/{song_id}"
       ]
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.ApiStackSongsApiF8318EB0.GET..songs.{song_id}"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/GET--songs--{song_id}/LambdaIntegration-Permission"
    }
   },
-  "SongsApisongssongidGETApiPermissionTestApiStackSongsApiF8318EB0GETsongssongidE8148018": {
-   "Type": "AWS::Lambda::Permission",
+  "SongsHttpApiGETsongssongid2A5FF3FA": {
+   "Type": "AWS::ApiGatewayV2::Route",
    "Properties": {
-    "Action": "lambda:InvokeFunction",
-    "FunctionName": {
-     "Fn::GetAtt": [
-      "SongsLambda1C3C9254",
-      "Arn"
-     ]
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
     },
-    "Principal": "apigateway.amazonaws.com",
-    "SourceArn": {
-     "Fn::Join": [
-      "",
-      [
-       "arn:",
-       {
-        "Ref": "AWS::Partition"
-       },
-       ":execute-api:us-east-1:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "SongsApi2ADAB318"
-       },
-       "/test-invoke-stage/GET/songs/*"
-      ]
-     ]
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/ApiPermission.Test.ApiStackSongsApiF8318EB0.GET..songs.{song_id}"
-   }
-  },
-  "SongsApisongssongidGET721DED46": {
-   "Type": "AWS::ApiGateway::Method",
-   "Properties": {
     "AuthorizationType": "NONE",
-    "HttpMethod": "GET",
-    "Integration": {
-     "IntegrationHttpMethod": "POST",
-     "Type": "AWS_PROXY",
-     "Uri": {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "SongsLambda1C3C9254",
-          "Arn"
-         ]
-        },
-        "/invocations"
-       ]
+    "RouteKey": "GET /songs/{song_id}",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
       ]
-     }
-    },
-    "ResourceId": {
-     "Ref": "SongsApisongssongid53FF27C2"
-    },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
+     ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/GET/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/GET--songs--{song_id}/Resource"
    }
   },
-  "SongsApisongssongidPUTApiPermissionApiStackSongsApiF8318EB0PUTsongssongidF0C79928": {
+  "SongsHttpApiPUTsongssongidLambdaIntegrationPermissionB9F2E856": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -563,97 +378,42 @@
        },
        ":",
        {
-        "Ref": "SongsApi2ADAB318"
+        "Ref": "SongsHttpApiB8BB25F9"
        },
-       "/",
-       {
-        "Ref": "SongsApiDeploymentStageprod023636B5"
-       },
-       "/PUT/songs/*"
+       "/*/*/songs/{song_id}"
       ]
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/PUT--songs--{song_id}/LambdaIntegration-Permission"
    }
   },
-  "SongsApisongssongidPUTApiPermissionTestApiStackSongsApiF8318EB0PUTsongssongid98773933": {
-   "Type": "AWS::Lambda::Permission",
+  "SongsHttpApiPUTsongssongid8472DC9C": {
+   "Type": "AWS::ApiGatewayV2::Route",
    "Properties": {
-    "Action": "lambda:InvokeFunction",
-    "FunctionName": {
-     "Fn::GetAtt": [
-      "SongsLambda1C3C9254",
-      "Arn"
-     ]
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
     },
-    "Principal": "apigateway.amazonaws.com",
-    "SourceArn": {
-     "Fn::Join": [
-      "",
-      [
-       "arn:",
-       {
-        "Ref": "AWS::Partition"
-       },
-       ":execute-api:us-east-1:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "SongsApi2ADAB318"
-       },
-       "/test-invoke-stage/PUT/songs/*"
-      ]
-     ]
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/ApiPermission.Test.ApiStackSongsApiF8318EB0.PUT..songs.{song_id}"
-   }
-  },
-  "SongsApisongssongidPUTF5A99F33": {
-   "Type": "AWS::ApiGateway::Method",
-   "Properties": {
     "AuthorizationType": "NONE",
-    "HttpMethod": "PUT",
-    "Integration": {
-     "IntegrationHttpMethod": "POST",
-     "Type": "AWS_PROXY",
-     "Uri": {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "SongsLambda1C3C9254",
-          "Arn"
-         ]
-        },
-        "/invocations"
-       ]
+    "RouteKey": "PUT /songs/{song_id}",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
       ]
-     }
-    },
-    "ResourceId": {
-     "Ref": "SongsApisongssongid53FF27C2"
-    },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
+     ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/PUT/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/PUT--songs--{song_id}/Resource"
    }
   },
-  "SongsApisongssongidDELETEApiPermissionApiStackSongsApiF8318EB0DELETEsongssongidD55C238B": {
+  "SongsHttpApiDELETEsongssongidLambdaIntegrationPermissionC0FD6592": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -678,100 +438,45 @@
        },
        ":",
        {
-        "Ref": "SongsApi2ADAB318"
+        "Ref": "SongsHttpApiB8BB25F9"
        },
-       "/",
-       {
-        "Ref": "SongsApiDeploymentStageprod023636B5"
-       },
-       "/DELETE/songs/*"
+       "/*/*/songs/{song_id}"
       ]
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}/LambdaIntegration-Permission"
    }
   },
-  "SongsApisongssongidDELETEApiPermissionTestApiStackSongsApiF8318EB0DELETEsongssongid3D4C2C5B": {
-   "Type": "AWS::Lambda::Permission",
+  "SongsHttpApiDELETEsongssongid291064FC": {
+   "Type": "AWS::ApiGatewayV2::Route",
    "Properties": {
-    "Action": "lambda:InvokeFunction",
-    "FunctionName": {
-     "Fn::GetAtt": [
-      "SongsLambda1C3C9254",
-      "Arn"
-     ]
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
     },
-    "Principal": "apigateway.amazonaws.com",
-    "SourceArn": {
-     "Fn::Join": [
-      "",
-      [
-       "arn:",
-       {
-        "Ref": "AWS::Partition"
-       },
-       ":execute-api:us-east-1:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "SongsApi2ADAB318"
-       },
-       "/test-invoke-stage/DELETE/songs/*"
-      ]
-     ]
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/ApiPermission.Test.ApiStackSongsApiF8318EB0.DELETE..songs.{song_id}"
-   }
-  },
-  "SongsApisongssongidDELETE5928C0E4": {
-   "Type": "AWS::ApiGateway::Method",
-   "Properties": {
     "AuthorizationType": "NONE",
-    "HttpMethod": "DELETE",
-    "Integration": {
-     "IntegrationHttpMethod": "POST",
-     "Type": "AWS_PROXY",
-     "Uri": {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "SongsLambda1C3C9254",
-          "Arn"
-         ]
-        },
-        "/invocations"
-       ]
+    "RouteKey": "DELETE /songs/{song_id}",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
       ]
-     }
-    },
-    "ResourceId": {
-     "Ref": "SongsApisongssongid53FF27C2"
-    },
-    "RestApiId": {
-     "Ref": "SongsApi2ADAB318"
+     ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "ApiStack/SongsApi/Default/songs/{song_id}/DELETE/Resource"
+    "aws:cdk:path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}/Resource"
    }
   },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OwW6DQAxEvyX3xW3DJdekVW9REfmAyFlc4rLsIuwVQoh/r3ZJ1ZzmeTwaew9vhxJedzhJYZuucHyD5aJoO4OTXBeH/a1BWD6jt8rBm/dv/8wVjT2LcPCrYexhqYOjtMhaBcd2zrlMq5HyiiKkAsckRko4RduRnlDI4MAtKk04w1KT6HHg3PXADxpcmHvymtyn6aLY5qsb1CQhjpZy59/wKNr4THoPTbI2Wtf/XH4sFbFvU+Ir6hB1NdWs9+BfSjjAfvcjzMUYvXJPUG/6C0hDQNBMAQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12OwU7EMAxEv2XvqYH2stddJAQnqu4HrLxZU0zbpKodqirKv6OkQkKc3tgej6aGp2MDjwdcpbL3oRr5BvGiaAeDq1zjiNPtjhBfgrPK3pnnD/dXt7RMLMLeJcM4Qez8SPlQ2PqR7VZ8RSUjzRVFSAVOGUYaOAc7kJ5RyODMPSqtuH3XEF9V59PM+T0jjxfFvsTvIq86H3RXb06pX/C32r+x+FIyHYkPiyVTCuQcdn02vAedgybTbvrp3UMDR6gPX8JcLcEpTwTdzh+XvFqRNAEAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "ApiStack/CDKMetadata/Default"
@@ -779,45 +484,18 @@
   }
  },
  "Outputs": {
-  "SongsApiEndpoint7DF87985": {
+  "ApiUrl": {
    "Value": {
     "Fn::Join": [
      "",
      [
       "https://",
       {
-       "Ref": "SongsApi2ADAB318"
+       "Ref": "SongsHttpApiB8BB25F9"
       },
       ".execute-api.us-east-1.",
       {
        "Ref": "AWS::URLSuffix"
-      },
-      "/",
-      {
-       "Ref": "SongsApiDeploymentStageprod023636B5"
-      },
-      "/"
-     ]
-    ]
-   }
-  },
-  "ApiEndpoint": {
-   "Description": "URL of the API Gateway",
-   "Value": {
-    "Fn::Join": [
-     "",
-     [
-      "https://",
-      {
-       "Ref": "SongsApi2ADAB318"
-      },
-      ".execute-api.us-east-1.",
-      {
-       "Ref": "AWS::URLSuffix"
-      },
-      "/",
-      {
-       "Ref": "SongsApiDeploymentStageprod023636B5"
       },
       "/"
      ]
