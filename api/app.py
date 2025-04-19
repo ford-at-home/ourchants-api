@@ -23,47 +23,131 @@ table = dynamodb.Table(os.getenv('DYNAMODB_TABLE_NAME'))
 api = SongsApi(table)
 
 def lambda_handler(event, context):
-    """Handle API Gateway requests."""
+    """Handle API Gateway HTTP API events."""
     try:
         logger.info(f"Received event: {json.dumps(event)}")
         
-        http_method = event['httpMethod']
-        path = event['path']
+        # Extract HTTP method and path from HTTP API event
+        http_method = event['requestContext']['http']['method']
+        path = event['requestContext']['http']['path']
+        body = event.get('body', '{}')
         
         # Route handling
         if path == '/songs':
             if http_method == 'GET':
                 songs = api.list_songs()
-                return success(200, songs)
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps(songs)
+                }
             elif http_method == 'POST':
-                song = api.create_song(json.loads(event['body']))
-                return success(201, song)
+                song = api.create_song(json.loads(body))
+                return {
+                    'statusCode': 201,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps(song)
+                }
         elif path.startswith('/songs/'):
             song_id = path.split('/')[-1]
             if http_method == 'GET':
                 song = api.get_song(song_id)
                 if not song:
-                    return error(404, 'Song not found')
-                return success(200, song)
+                    return {
+                        'statusCode': 404,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'error': 'Song not found'})
+                    }
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps(song)
+                }
             elif http_method == 'PUT':
-                song = api.update_song(song_id, json.loads(event['body']))
+                song = api.update_song(song_id, json.loads(body))
                 if not song:
-                    return error(404, 'Song not found')
-                return success(200, song)
+                    return {
+                        'statusCode': 404,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'error': 'Song not found'})
+                    }
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps(song)
+                }
             elif http_method == 'DELETE':
                 api.delete_song(song_id)
-                return success(204)
+                return {
+                    'statusCode': 204,
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                }
         
-        return error(405, 'Method not allowed')
+        return {
+            'statusCode': 405,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Method not allowed'})
+        }
     except ValidationError as e:
         logger.error(f"Validation error: {str(e)}")
-        return error(400, str(e.messages))
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': str(e.messages)})
+        }
     except ClientError as e:
         logger.error(f"AWS error: {str(e)}")
-        return error(500, str(e))
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': str(e)})
+        }
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON: {str(e)}")
-        return error(400, 'Invalid JSON in request body')
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Invalid JSON in request body'})
+        }
     except Exception as e:
         logger.error(f"Error: {str(e)}")
-        return error(500, str(e)) 
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': str(e)})
+        } 

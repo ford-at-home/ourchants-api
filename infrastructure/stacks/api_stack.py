@@ -50,7 +50,7 @@ class ApiStack(Stack):
             function
         )
 
-        # Add routes
+        # Add routes with proper integration
         api.add_routes(
             path="/songs",
             methods=[apigw.HttpMethod.GET],

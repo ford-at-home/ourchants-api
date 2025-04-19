@@ -85,7 +85,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
      },
-     "S3Key": "ef4e7917b2ee2e83fc9f0e3a89b0cbb2af5105567866cc870819d118a03afa00.zip"
+     "S3Key": "76a2baa269947c30b2d2b89e6c1788c7cdd20ca1efe2d13a5bcad473c7c3ffcb.zip"
     },
     "Environment": {
      "Variables": {
@@ -109,7 +109,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsLambda/Resource",
-    "aws:asset:path": "asset.ef4e7917b2ee2e83fc9f0e3a89b0cbb2af5105567866cc870819d118a03afa00",
+    "aws:asset:path": "asset.76a2baa269947c30b2d2b89e6c1788c7cdd20ca1efe2d13a5bcad473c7c3ffcb",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
