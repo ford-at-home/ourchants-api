@@ -16,13 +16,25 @@ class ApiStack(Stack):
 
         # Get the path to the Lambda code
         lambda_code_path = os.path.join(os.path.dirname(__file__), "../../api")
+        
+        # Get the absolute path to the api directory
+        api_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../api"))
+
+        # Create a Lambda layer for dependencies
+        layer = lambda_.LayerVersion(
+            self, "DependenciesLayer",
+            code=lambda_.Code.from_asset(os.path.abspath(os.path.join(os.path.dirname(__file__), "../layers/python/layer.zip"))),
+            compatible_runtimes=[lambda_.Runtime.PYTHON_3_9],
+            description="Layer containing Python dependencies"
+        )
 
         # Create Lambda function
         function = lambda_.Function(
             self, "SongsLambda",
-            runtime=lambda_.Runtime.PYTHON_3_8,
+            runtime=lambda_.Runtime.PYTHON_3_9,
             handler="app.lambda_handler",
             code=lambda_.Code.from_asset(lambda_code_path),
+            layers=[layer],
             environment={
                 "DYNAMODB_TABLE_NAME": db_stack.table.table_name
             }

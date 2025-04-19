@@ -1,5 +1,26 @@
 {
  "Resources": {
+  "DependenciesLayerDF300E31": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "CompatibleRuntimes": [
+     "python3.9"
+    ],
+    "Content": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
+     },
+     "S3Key": "cd2380c1aad8b232578087904059db8485dda7e1a912f7fb7955d6176119164f.zip"
+    },
+    "Description": "Layer containing Python dependencies"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ApiStack/DependenciesLayer/Resource",
+    "aws:asset:path": "asset.cd2380c1aad8b232578087904059db8485dda7e1a912f7fb7955d6176119164f.zip",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Content"
+   }
+  },
   "SongsLambdaServiceRole228DD055": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -85,7 +106,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
      },
-     "S3Key": "76a2baa269947c30b2d2b89e6c1788c7cdd20ca1efe2d13a5bcad473c7c3ffcb.zip"
+     "S3Key": "2e192b428edcab41546f478d7e1b417a22d575c74c71caaab9d8831e7db3161d.zip"
     },
     "Environment": {
      "Variables": {
@@ -95,13 +116,18 @@
      }
     },
     "Handler": "app.lambda_handler",
+    "Layers": [
+     {
+      "Ref": "DependenciesLayerDF300E31"
+     }
+    ],
     "Role": {
      "Fn::GetAtt": [
       "SongsLambdaServiceRole228DD055",
       "Arn"
      ]
     },
-    "Runtime": "python3.8"
+    "Runtime": "python3.9"
    },
    "DependsOn": [
     "SongsLambdaServiceRoleDefaultPolicy1C9E4DB3",
@@ -109,7 +135,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsLambda/Resource",
-    "aws:asset:path": "asset.76a2baa269947c30b2d2b89e6c1788c7cdd20ca1efe2d13a5bcad473c7c3ffcb",
+    "aws:asset:path": "asset.2e192b428edcab41546f478d7e1b417a22d575c74c71caaab9d8831e7db3161d",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -476,7 +502,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12OwU7EMAxEv2XvqYH2stddJAQnqu4HrLxZU0zbpKodqirKv6OkQkKc3tgej6aGp2MDjwdcpbL3oRr5BvGiaAeDq1zjiNPtjhBfgrPK3pnnD/dXt7RMLMLeJcM4Qez8SPlQ2PqR7VZ8RSUjzRVFSAVOGUYaOAc7kJ5RyODMPSqtuH3XEF9V59PM+T0jjxfFvsTvIq86H3RXb06pX/C32r+x+FIyHYkPiyVTCuQcdn02vAedgybTbvrp3UMDR6gPX8JcLcEpTwTdzh+XvFqRNAEAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/11O0UrDQBD8lr5f1rZ58rEVREEwpOBr2V7XuE1yF273DCHk3+UuCurTzOzODLOH3f0WthscpbDXtuj4AvNJ0bYGRznPHfaXK8L8ghOFNwrC3pmHd/dHP0Zn9fvxm1cUepZkWYyUZxQhFTgkMFLCMdqW9IhChrGHufYdpVjGyndsp9yS2WJw4AaVRpw+9zA/qQ6HgZMhQZInxSYXrCSdah91Zc9OqQn4M+2fzL5lMXlbirNrTE3iY7C58jXqEHUx1aQf3t2VsCuh3NyEuQjRKfcE9YpfCaLbW1IBAAA="
    },
    "Metadata": {
     "aws:cdk:path": "ApiStack/CDKMetadata/Default"
