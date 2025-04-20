@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
 
+export JSII_SILENCE_WARNING_DEPRECATED_NODE_VERSION=1
+
 # ===== Path Setup =====
 # Get the absolute path of the infrastructure directory
 INFRA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -28,13 +30,8 @@ echo "=== Installing Dependencies ==="
 # Upgrade pip first
 pip install --upgrade pip
 
-# Install infrastructure dependencies
-pip install -r "$INFRA_DIR/requirements.txt" -v
-
-# Install API dependencies if requirements.txt exists
-if [ -f "$ROOT_DIR/api/requirements.txt" ]; then
-    pip install -r "$ROOT_DIR/api/requirements.txt" -v
-fi
+# Install all dependencies from root requirements.txt
+pip install -r "$ROOT_DIR/requirements.txt" -v
 
 # ===== AWS Configuration =====
 echo "=== AWS Configuration ==="
@@ -46,7 +43,7 @@ echo "Region: ${AWS_REGION}"
 # ===== CDK Bootstrap =====
 echo "=== Bootstrapping CDK ==="
 cd "$INFRA_DIR"
-cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_REGION} --verbose
+cdk bootstrap "aws://${AWS_ACCOUNT_ID}/${AWS_REGION}" --verbose
 
 # ===== Deployment =====
 echo "=== Deploying Stacks ==="

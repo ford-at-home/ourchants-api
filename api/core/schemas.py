@@ -19,6 +19,7 @@ class SongSchema(Schema):
     filepath = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
     lineage = fields.List(fields.String(), allow_none=True)
+    s3_uri = fields.String(allow_none=True)  # S3 URI of the audio file
 
     class Meta:
         unknown = EXCLUDE  # Reject unknown fields

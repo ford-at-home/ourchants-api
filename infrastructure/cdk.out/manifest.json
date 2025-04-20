@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/a9a9d5300dfa6fb8402d9f36e8981424e67ca3cafad6eaca86700526c5536d20.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/1e8f51024bb520c409c856094ebeb83117914f5334a9ad50a411ad8972d804fb.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -44,6 +44,18 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "TableName"
+          }
+        ],
+        "/DatabaseStack/BucketName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketName"
+          }
+        ],
+        "/DatabaseStack/BucketURI": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketURI"
           }
         ],
         "/DatabaseStack/CDKMetadata/Default": [
@@ -96,7 +108,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/140ed2377cb5ba00a3d29bb39cc851a3dad6c235c773624f05474ab472ef1d50.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/d7701e5e428af94e1490ccd12fadd034a5632d07136819412dcb3ee2125390eb.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -213,6 +225,18 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "SongsHttpApiDELETEsongssongid291064FC"
+          }
+        ],
+        "/ApiStack/SongsHttpApi/POST--presigned-url/LambdaIntegration-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsHttpApiPOSTpresignedurlLambdaIntegrationPermissionD68AE8FC"
+          }
+        ],
+        "/ApiStack/SongsHttpApi/POST--presigned-url/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SongsHttpApiPOSTpresignedurl1EAD3311"
           }
         ],
         "/ApiStack/ApiUrl": [

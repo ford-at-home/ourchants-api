@@ -12,9 +12,9 @@ https://{api_id}.execute-api.{region}.amazonaws.com
 Currently, the API is publicly accessible. Future versions will implement authentication using AWS Cognito or API keys.
 
 ## CORS Configuration
-The API is configured to accept requests from:
+The API is configured to accept requests from any origin:
 ```
-http://ourchants-website.s3-website-us-east-1.amazonaws.com
+Access-Control-Allow-Origin: *
 ```
 
 Allowed methods: GET, POST, PUT, DELETE
@@ -30,7 +30,7 @@ interface Song {
   title: string;          // Required
   artist: string;         // Required
   album?: string;         // Optional
-  bpm?: string;          // Optional, stored as string for flexibility
+  genre?: string;         // Optional
   composer?: string;      // Optional
   version?: string;       // Optional
   date?: string;         // Optional, format: "YYYY-MM-DD HH:MM:SS"
@@ -38,6 +38,23 @@ interface Song {
   filepath?: string;      // Optional
   description?: string;   // Optional
   lineage?: string[];    // Optional, defaults to empty array
+  s3_uri?: string;       // Optional, S3 URI of the audio file
+  duration?: string;     // Optional, duration in seconds
+}
+
+### Pre-signed URL Request
+```typescript
+interface PresignedUrlRequest {
+  bucket?: string;  // Optional, defaults to configured bucket
+  key: string;      // Required, S3 object key
+}
+```
+
+### Pre-signed URL Response
+```typescript
+interface PresignedUrlResponse {
+  url: string;      // Pre-signed URL for the S3 object
+  expiresIn: number // Expiration time in seconds
 }
 ```
 
@@ -90,7 +107,8 @@ const song = await response.json();
 - **Method**: GET
 - **Path**: `/songs`
 - **Response**: 200 OK
-- **Response Body**: Array of song objects
+- **Response Body**: Array of song objects that have an s3_uri attribute
+- **Note**: Only songs with an s3_uri attribute will be returned in the list
 - **Example**:
 ```typescript
 const response = await fetch(`${API_BASE_URL}/songs`);
@@ -133,6 +151,76 @@ const response = await fetch(`${API_BASE_URL}/songs/${songId}`, {
 });
 ```
 
+### 6. Generate Pre-signed URL
+- **Method**: POST
+- **Path**: `/presigned-url`
+- **Request Body**: Pre-signed URL Request object
+- **Response**: 200 OK
+- **Response Body**: Pre-signed URL Response object
+- **Error Responses**:
+  - 400 Bad Request:
+    ```json
+    {
+      "error": "Invalid bucket name",
+      "details": "Bucket name must be between 3 and 63 characters long",
+      "code": "INVALID_BUCKET_NAME"
+    }
+    ```
+    ```json
+    {
+      "error": "Invalid object key",
+      "details": "Object key cannot exceed 1024 characters",
+      "code": "INVALID_OBJECT_KEY"
+    }
+    ```
+  - 404 Not Found:
+    ```json
+    {
+      "error": "Bucket ourchants-songs not found",
+      "details": "The specified S3 bucket does not exist",
+      "code": "BUCKET_NOT_FOUND"
+    }
+    ```
+    ```json
+    {
+      "error": "Object song.mp3 not found in bucket ourchants-songs",
+      "details": "The specified S3 object does not exist in the bucket",
+      "code": "OBJECT_NOT_FOUND"
+    }
+    ```
+  - 500 Internal Server Error:
+    ```json
+    {
+      "error": "Failed to generate pre-signed URL",
+      "details": "An error occurred while generating the pre-signed URL",
+      "code": "INTERNAL_ERROR"
+    }
+    ```
+- **CORS Headers**:
+  ```
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: OPTIONS,POST
+  Access-Control-Allow-Headers: Content-Type
+  ```
+- **Rate Limits**:
+  - Maximum 3 retry attempts for S3 operations
+  - 5-second timeout for S3 connections
+  - 5-second timeout for S3 read operations
+- **Example**:
+```typescript
+const response = await fetch(`${API_BASE_URL}/presigned-url`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    bucket: "ourchants-songs",
+    key: "songs/amazing_grace.mp3"
+  }),
+});
+const { url, expiresIn } = await response.json();
+```
+
 ## Error Handling
 
 ### Error Response Format
@@ -140,7 +228,6 @@ const response = await fetch(`${API_BASE_URL}/songs/${songId}`, {
 interface ErrorResponse {
   error: string;    // Error message
   code: string;     // Error code
-  details?: any;    // Additional error details (optional)
 }
 ```
 
@@ -154,118 +241,69 @@ interface ErrorResponse {
 
 ### 1. Concurrent Operations
 ```typescript
-async function updateSongWithRetry(songId: string, song: Song, maxRetries = 3): Promise<Song> {
-  let retries = 0;
-  
-  while (retries < maxRetries) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/songs/${songId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(song),
-      });
-      
-      if (response.status === 409) {
-        retries++;
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)));
-        continue;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return response.json();
-    } catch (error) {
-      if (retries === maxRetries - 1) throw error;
-      retries++;
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)));
-    }
-  }
-  
-  throw new Error('Max retries exceeded');
+// Example of handling concurrent updates
+const response = await fetch(`${API_BASE_URL}/songs/${songId}`);
+const song = await response.json();
+
+// Make changes
+song.title = "Updated Title";
+
+// Update with optimistic locking
+const updateResponse = await fetch(`${API_BASE_URL}/songs/${songId}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(song),
+});
+
+if (updateResponse.status === 409) {
+  // Handle conflict
+  console.log("Song was modified by another user");
 }
 ```
 
-### 2. Error Handling
+### 2. Audio Playback
 ```typescript
-async function handleApiError(response: Response) {
+// Example of using pre-signed URLs for audio playback
+async function getAudioUrl(song: Song) {
+  // Extract bucket and key from S3 URI
+  const s3Uri = song.s3_uri;
+  if (!s3Uri) return null;
+  
+  const [bucket, ...keyParts] = s3Uri.replace('s3://', '').split('/');
+  const key = keyParts.join('/');
+  
+  // Get pre-signed URL
+  const response = await fetch(`${API_BASE_URL}/presigned-url`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ bucket, key }),
+  });
+  
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    throw new Error('Failed to get pre-signed URL');
   }
-  return response.json();
-}
-```
-
-### 3. Type Safety
-```typescript
-// Use TypeScript interfaces for type safety
-interface ApiResponse<T> {
-  data?: T;
-  error?: ErrorResponse;
+  
+  const { url, expiresIn } = await response.json();
+  return url;
 }
 
-async function fetchSongs(): Promise<ApiResponse<Song[]>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/songs`);
-    const data = await response.json();
-    return { data };
-  } catch (error) {
-    return { error: { message: error.message } };
-  }
-}
-```
-
-### 4. React Integration Example
-```typescript
-import { useState, useEffect } from 'react';
-
-function SongList() {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchSongs() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/songs`);
-        if (!response.ok) throw new Error('Failed to fetch songs');
-        const data = await response.json();
-        setSongs(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchSongs();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-      {songs.map(song => (
-        <div key={song.song_id}>
-          <h2>{song.title}</h2>
-          <p>Artist: {song.artist}</p>
-          {/* ... other song details ... */}
-        </div>
-      ))}
-    </div>
-  );
+// Usage in audio player component
+const audioUrl = await getAudioUrl(song);
+if (audioUrl) {
+  audioPlayer.src = audioUrl;
 }
 ```
 
 ## Rate Limits and Quotas
-- Default AWS API Gateway limits apply
+The API uses AWS API Gateway's default limits:
 - 10,000 requests per second per region
 - Implement appropriate error handling for throttling (429 responses)
+
+Note: These are AWS-imposed limits and may vary based on your AWS account type and region.
 
 ## Future Enhancements
 1. Authentication and authorization
@@ -282,4 +320,4 @@ For API support or to report issues, please contact the API team or create an is
 - Added full schema support for all song fields
 - Implemented concurrent operation handling
 - Added detailed error responses
-- Updated for HTTP API integration 
+- Added pre-signed URL endpoint for audio playback 

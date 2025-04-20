@@ -3,12 +3,15 @@ from aws_cdk import (
     aws_lambda as lambda_,
     aws_apigatewayv2 as apigw,
     aws_apigatewayv2_integrations as integrations,
+    aws_iam as iam,
     CfnOutput,
-    Duration
+    Duration,
+    aws_s3 as s3
 )
 from constructs import Construct
 from .db_stack import DatabaseStack
 import os
+import aws_cdk as cdk
 
 class ApiStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, db_stack: DatabaseStack, **kwargs) -> None:
@@ -35,13 +38,21 @@ class ApiStack(Stack):
             handler="app.lambda_handler",
             code=lambda_.Code.from_asset(lambda_code_path),
             layers=[layer],
+            timeout=Duration.seconds(30),  # Increase timeout to 30 seconds
             environment={
-                "DYNAMODB_TABLE_NAME": db_stack.table.table_name
+                "DYNAMODB_TABLE_NAME": db_stack.table.table_name,
+                "S3_BUCKET": db_stack.bucket.bucket_name  # Use the bucket name from DatabaseStack
             }
         )
 
         # Grant Lambda function access to DynamoDB table
         db_stack.table.grant_read_write_data(function)
+
+        # Use the bucket from DatabaseStack
+        self.audio_bucket = db_stack.bucket
+
+        # Grant Lambda function access to S3 bucket
+        self.audio_bucket.grant_read_write(function)  # Grant read/write access to the bucket
 
         # Create HTTP API with CORS enabled
         api = apigw.HttpApi(
@@ -90,6 +101,13 @@ class ApiStack(Stack):
         api.add_routes(
             path="/songs/{song_id}",
             methods=[apigw.HttpMethod.DELETE],
+            integration=lambda_integration
+        )
+
+        # Add pre-signed URL endpoint
+        api.add_routes(
+            path="/presigned-url",
+            methods=[apigw.HttpMethod.POST],
             integration=lambda_integration
         )
 

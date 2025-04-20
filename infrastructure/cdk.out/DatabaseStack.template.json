@@ -26,7 +26,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXIOQqAMBBA0bPYJ+OSytoDKGovk0WMSyJmgoh4d0Gr//gF5GUGWYJn4EovfLUS7o5QLQzPMOjL4ea1hLtHuRpWje7Dw1oTfDzUt+pIe6SHNRdN3qUCcgEimYO1/IiO7Gag/fsCW1u+tW8AAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXKTQ6CMBBA4bOwb0ewK7Z4AA26N9MfYy20hJmGkKZ3J8HV+xbvCl3fQtvgRtLYICevoTwZTRC40bvYPeKcrIbyQj05cfvEE1WQgiGb4HhAclWMjlJezXncMy+Zq3js/E3xoqBToJofeS/XHNnPDsZ/D3EQsrx/AAAA"
    },
    "Metadata": {
     "aws:cdk:path": "DatabaseStack/CDKMetadata/Default"
@@ -39,6 +39,14 @@
    "Value": {
     "Ref": "SongsTable64F8B317"
    }
+  },
+  "BucketName": {
+   "Description": "Name of the S3 bucket for song files",
+   "Value": "ourchants-songs"
+  },
+  "BucketURI": {
+   "Description": "S3 URI for the song files bucket",
+   "Value": "s3://ourchants-songs"
   },
   "ExportsOutputFnGetAttSongsTable64F8B317ArnEAB5B67E": {
    "Value": {

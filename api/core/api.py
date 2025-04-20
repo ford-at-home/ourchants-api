@@ -18,10 +18,12 @@ class SongsApi:
         self.table = table
 
     def list_songs(self) -> List[Dict[str, Any]]:
-        """List all songs."""
+        """List all songs that have an s3_uri attribute."""
         response = self.table.scan()
         items = response.get('Items', [])
-        return songs_schema.dump(items)
+        # Filter for songs that have an s3_uri attribute
+        items_with_s3_uri = [item for item in items if 's3_uri' in item]
+        return songs_schema.dump(items_with_s3_uri)
 
     def create_song(self, song_data: Dict[str, str]) -> Dict[str, Any]:
         """Create a new song."""

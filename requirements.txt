@@ -1,0 +1,32 @@
+# Core dependencies
+boto3>=1.26.0
+marshmallow>=3.21.0
+python-dotenv>=1.0.0
+
+# Infrastructure dependencies (CDK)
+aws-cdk-lib>=2.0.0
+constructs>=10.0.0
+
+# Testing dependencies
+pytest==8.1.1
+pytest-cov==4.1.0
+moto[dynamodb]==5.0.3
+requests==2.31.0
+coverage==7.4.4
+pytest-watch==4.2.0
+
+# Utilities
+mutagen>=1.47.0
+tqdm>=4.66.0
+
+# Development tools
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Lambda layer dependencies
+# Note: These are the same as core dependencies but with specific versions
+# for the Lambda layer
+boto3>=1.26.0
+marshmallow>=3.0.0
+python-dotenv>=1.0.0 

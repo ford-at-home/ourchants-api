@@ -5,6 +5,7 @@ This module sets up the test environment with:
 - Mocked AWS credentials for testing
 - A test client for making Lambda invocations
 - A mocked DynamoDB table for testing database operations
+- A mocked S3 bucket for testing pre-signed URLs
 
 The fixtures defined here are automatically available to all test files.
 """
@@ -14,7 +15,7 @@ import json
 import sys
 import os
 import boto3
-from moto import mock_aws
+from moto import mock_aws, mock_s3
 from uuid import uuid4
 
 # Add the api directory to the Python path
@@ -22,6 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'api'))
 
 # Set environment variables for testing
 os.environ['DYNAMODB_TABLE_NAME'] = 'test-songs-table'
+os.environ['S3_BUCKET'] = 'ourchants-songs'  # Update to match new bucket name
 os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
 os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
 os.environ['AWS_SECURITY_TOKEN'] = 'testing'
@@ -49,6 +51,19 @@ def mock_dynamodb():
         
         yield table
 
+@pytest.fixture
+def mock_s3():
+    """Create a mock S3 bucket for testing."""
+    with mock_s3():
+        # Create mock S3 client
+        s3 = boto3.client('s3')
+        
+        # Create test bucket
+        bucket_name = os.getenv('S3_BUCKET')
+        s3.create_bucket(Bucket=bucket_name)
+        
+        yield s3
+
 # Import the app after setting up environment variables
 from api.app import lambda_handler
 
@@ -58,8 +73,12 @@ def client(mock_dynamodb):
     def invoke(method, path, body=None):
         """Simulate API Gateway call."""
         event = {
-            'httpMethod': method,
-            'path': path,
+            'requestContext': {
+                'http': {
+                    'method': method,
+                    'path': path
+                }
+            },
             'body': json.dumps(body) if body else None
         }
         return lambda_handler(event, None)
@@ -81,5 +100,6 @@ def test_song():
         'filename': 'test_song.mp3',
         'filepath': 'Media/test_song.mp3',
         'description': 'Test description',
-        'lineage': []
+        'lineage': [],
+        's3_uri': 's3://ourchants-songs/test_song.mp3'  # Update to match new bucket name
     } 

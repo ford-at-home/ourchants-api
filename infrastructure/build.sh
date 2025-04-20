@@ -14,12 +14,12 @@ cd "$LAYER_DIR"
 python3.9 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt -v
+pip install -r "$ROOT_DIR/requirements.txt" -v
 
 # Create python directory for layer
 echo "=== Packaging Layer ==="
 mkdir -p python
-pip install -r requirements.txt -t python/
+pip install -r "$ROOT_DIR/requirements.txt" -t python/
 
 # Clean up unnecessary files
 find python -type d -name "__pycache__" -exec rm -rf {} +
@@ -39,7 +39,7 @@ echo "=== Setting up CDK Environment ==="
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt -v
+pip install -r "$ROOT_DIR/requirements.txt" -v
 
 # Deploy infrastructure in correct order
 echo "=== Deploying Database Stack ==="

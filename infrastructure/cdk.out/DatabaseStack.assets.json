@@ -1,7 +1,7 @@
 {
   "version": "41.0.0",
   "files": {
-    "a9a9d5300dfa6fb8402d9f36e8981424e67ca3cafad6eaca86700526c5536d20": {
+    "1e8f51024bb520c409c856094ebeb83117914f5334a9ad50a411ad8972d804fb": {
       "displayName": "DatabaseStack Template",
       "source": {
         "path": "DatabaseStack.template.json",
@@ -10,7 +10,7 @@
       "destinations": {
         "current_account-us-east-1": {
           "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
-          "objectKey": "a9a9d5300dfa6fb8402d9f36e8981424e67ca3cafad6eaca86700526c5536d20.json",
+          "objectKey": "1e8f51024bb520c409c856094ebeb83117914f5334a9ad50a411ad8972d804fb.json",
           "region": "us-east-1",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
         }

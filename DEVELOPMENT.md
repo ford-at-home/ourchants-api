@@ -23,7 +23,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 3. Install dependencies:
 ```bash
-cd api
 pip install -r requirements.txt
 ```
 
@@ -116,10 +115,18 @@ Response: 200 OK
 ```json
 [
   {
-    "song_id": "...",
-    "title": "...",
-    "artist": "...",
-    "lyrics": "..."
+    "song_id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Amazing Grace",
+    "artist": "John Newton",
+    "album": "Hymnal Volume 1",
+    "bpm": "70",
+    "composer": "John Newton",
+    "version": "1.0",
+    "date": "2024-04-17 08:46:12",
+    "filename": "amazing_grace.mp3",
+    "filepath": "Media/amazing_grace.mp3",
+    "description": "Traditional hymn",
+    "lineage": ["original"]
   }
 ]
 ```
@@ -127,22 +134,38 @@ Response: 200 OK
 ### POST /songs
 Creates a new song.
 
-Request body:
+Request:
 ```json
 {
-  "title": "Test Song",
-  "artist": "Test Artist",
-  "lyrics": "Test lyrics"
+  "title": "Amazing Grace",
+  "artist": "John Newton",
+  "album": "Hymnal Volume 1",
+  "bpm": "70",
+  "composer": "John Newton",
+  "version": "1.0",
+  "date": "2024-04-17 08:46:12",
+  "filename": "amazing_grace.mp3",
+  "filepath": "Media/amazing_grace.mp3",
+  "description": "Traditional hymn",
+  "lineage": ["original"]
 }
 ```
 
 Response: 201 Created
 ```json
 {
-  "song_id": "...",
-  "title": "Test Song",
-  "artist": "Test Artist",
-  "lyrics": "Test lyrics"
+  "song_id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Amazing Grace",
+  "artist": "John Newton",
+  "album": "Hymnal Volume 1",
+  "bpm": "70",
+  "composer": "John Newton",
+  "version": "1.0",
+  "date": "2024-04-17 08:46:12",
+  "filename": "amazing_grace.mp3",
+  "filepath": "Media/amazing_grace.mp3",
+  "description": "Traditional hymn",
+  "lineage": ["original"]
 }
 ```
 
@@ -152,32 +175,56 @@ Retrieves a specific song.
 Response: 200 OK
 ```json
 {
-  "song_id": "...",
-  "title": "...",
-  "artist": "...",
-  "lyrics": "..."
+  "song_id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Amazing Grace",
+  "artist": "John Newton",
+  "album": "Hymnal Volume 1",
+  "bpm": "70",
+  "composer": "John Newton",
+  "version": "1.0",
+  "date": "2024-04-17 08:46:12",
+  "filename": "amazing_grace.mp3",
+  "filepath": "Media/amazing_grace.mp3",
+  "description": "Traditional hymn",
+  "lineage": ["original"]
 }
 ```
 
 ### PUT /songs/{song_id}
 Updates a song.
 
-Request body:
+Request:
 ```json
 {
-  "title": "Updated Title",
-  "artist": "Updated Artist",
-  "lyrics": "Updated lyrics"
+  "title": "Updated Amazing Grace",
+  "artist": "John Newton",
+  "album": "Hymnal Volume 1",
+  "bpm": "72",
+  "composer": "John Newton",
+  "version": "1.1",
+  "date": "2024-04-17 08:46:12",
+  "filename": "amazing_grace.mp3",
+  "filepath": "Media/amazing_grace.mp3",
+  "description": "Updated traditional hymn",
+  "lineage": ["original", "updated"]
 }
 ```
 
 Response: 200 OK
 ```json
 {
-  "song_id": "...",
-  "title": "Updated Title",
-  "artist": "Updated Artist",
-  "lyrics": "Updated lyrics"
+  "song_id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Updated Amazing Grace",
+  "artist": "John Newton",
+  "album": "Hymnal Volume 1",
+  "bpm": "72",
+  "composer": "John Newton",
+  "version": "1.1",
+  "date": "2024-04-17 08:46:12",
+  "filename": "amazing_grace.mp3",
+  "filepath": "Media/amazing_grace.mp3",
+  "description": "Updated traditional hymn",
+  "lineage": ["original", "updated"]
 }
 ```
 

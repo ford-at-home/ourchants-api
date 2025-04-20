@@ -84,6 +84,25 @@
          "Ref": "AWS::NoValue"
         }
        ]
+      },
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        "arn:aws:s3:::ourchants-songs",
+        "arn:aws:s3:::ourchants-songs/*"
+       ]
       }
      ],
      "Version": "2012-10-17"
@@ -106,13 +125,14 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
      },
-     "S3Key": "2e192b428edcab41546f478d7e1b417a22d575c74c71caaab9d8831e7db3161d.zip"
+     "S3Key": "8ecd9dd452bd75e068b904f35cd7ea454a954b790026d4f44ddc76320b2159b5.zip"
     },
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE_NAME": {
        "Fn::ImportValue": "DatabaseStack:ExportsOutputRefSongsTable64F8B31794ADE60C"
-      }
+      },
+      "S3_BUCKET": "ourchants-songs"
      }
     },
     "Handler": "app.lambda_handler",
@@ -127,7 +147,8 @@
       "Arn"
      ]
     },
-    "Runtime": "python3.9"
+    "Runtime": "python3.9",
+    "Timeout": 30
    },
    "DependsOn": [
     "SongsLambdaServiceRoleDefaultPolicy1C9E4DB3",
@@ -135,7 +156,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsLambda/Resource",
-    "aws:asset:path": "asset.2e192b428edcab41546f478d7e1b417a22d575c74c71caaab9d8831e7db3161d",
+    "aws:asset:path": "asset.8ecd9dd452bd75e068b904f35cd7ea454a954b790026d4f44ddc76320b2159b5",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -497,6 +518,66 @@
    },
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsHttpApi/DELETE--songs--{song_id}/Resource"
+   }
+  },
+  "SongsHttpApiPOSTpresignedurlLambdaIntegrationPermissionD68AE8FC": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SongsLambda1C3C9254",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "SongsHttpApiB8BB25F9"
+       },
+       "/*/*/presigned-url"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ApiStack/SongsHttpApi/POST--presigned-url/LambdaIntegration-Permission"
+   }
+  },
+  "SongsHttpApiPOSTpresignedurl1EAD3311": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "SongsHttpApiB8BB25F9"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "POST /presigned-url",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "SongsHttpApiGETsongsLambdaIntegrationC1F7DB57"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ApiStack/SongsHttpApi/POST--presigned-url/Resource"
    }
   },
   "CDKMetadata": {

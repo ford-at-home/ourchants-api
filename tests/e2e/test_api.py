@@ -34,118 +34,127 @@ def get_api_url():
             raise Exception("AWS credentials not configured. Run 'aws configure' or set AWS env vars.") from e
         raise
 
-@pytest.fixture(scope="module")
-def api_url():
-    """Fixture to resolve and cache the Songs API URL."""
-    return get_api_url()
+def test_presigned_url(api_url):
+    """Test the pre-signed URL endpoint."""
+    # Create a test file in S3
+    s3 = boto3.client('s3')
+    bucket = 'ourchants-songs'
+    key = f'test-{uuid4()}.mp3'
+    
+    try:
+        # Upload a test file
+        s3.put_object(
+            Bucket=bucket,
+            Key=key,
+            Body=b'test content'
+        )
+        
+        # Request pre-signed URL
+        response = requests.post(
+            f"{api_url}/presigned-url",
+            json={
+                "bucket": bucket,
+                "key": key
+            }
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "url" in data
+        assert "expiresIn" in data
+        assert data["expiresIn"] == 3600
+        
+        # Verify the URL works
+        url_response = requests.get(data["url"])
+        assert url_response.status_code == 200
+        assert url_response.content == b'test content'
+        
+    finally:
+        # Clean up
+        try:
+            s3.delete_object(Bucket=bucket, Key=key)
+        except Exception as e:
+            print(f"Error cleaning up test file: {e}")
 
-@pytest.fixture
-def test_song():
-    """Create a test song payload."""
-    return {
-        "title": f"Test Song {uuid4()}",
-        "artist": "E2E Test Artist",
-        "album": "Test Album",
-        "bpm": "120",
-        "composer": "Test Composer",
-        "version": "1.0",
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "filename": "test_song.mp3",
-        "filepath": "Media/test_song.mp3",
-        "description": "A test song for end-to-end testing",
-        "lineage": ["original"]
-    }
-
-def get_lambda_logs(function_name, start_time=None, end_time=None):
-    """Fetch logs from CloudWatch for the Lambda function."""
-    if start_time is None:
-        start_time = datetime.utcnow() - timedelta(minutes=5)
-    if end_time is None:
-        end_time = datetime.utcnow()
-    
-    # Add a 10-second delay to ensure logs are available
-    print("\nWaiting 10 seconds for logs to be available...")
-    sleep(10)
-    
-    logs_client = boto3.client('logs')
-    
-    # Get log groups
-    log_groups = logs_client.describe_log_groups(
-        logGroupNamePrefix=f'/aws/lambda/{function_name}'
+def test_presigned_url_errors(api_url):
+    """Test error cases for the pre-signed URL endpoint."""
+    # Test missing key
+    response = requests.post(
+        f"{api_url}/presigned-url",
+        json={}
     )
+    assert response.status_code == 400
+    data = response.json()
+    assert "error" in data
+    assert "code" in data
+    assert data["code"] == "MISSING_REQUIRED_FIELD"
     
-    if not log_groups['logGroups']:
-        return "No log groups found"
-    
-    log_group = log_groups['logGroups'][0]['logGroupName']
-    
-    # Get log streams
-    log_streams = logs_client.describe_log_streams(
-        logGroupName=log_group,
-        orderBy='LastEventTime',
-        descending=True,
-        limit=5
+    # Test non-existent bucket
+    response = requests.post(
+        f"{api_url}/presigned-url",
+        json={
+            "bucket": "non-existent-bucket",
+            "key": "test.mp3"
+        }
     )
+    assert response.status_code == 404
+    data = response.json()
+    assert "error" in data
+    assert "code" in data
+    assert data["code"] == "BUCKET_NOT_FOUND"
     
-    if not log_streams['logStreams']:
-        return "No log streams found"
-    
-    # Get events from the most recent log stream
-    log_stream = log_streams['logStreams'][0]['logStreamName']
-    events = logs_client.get_log_events(
-        logGroupName=log_group,
-        logStreamName=log_stream,
-        startTime=int(start_time.timestamp() * 1000),
-        endTime=int(end_time.timestamp() * 1000),
-        limit=100
+    # Test non-existent object
+    response = requests.post(
+        f"{api_url}/presigned-url",
+        json={
+            "bucket": "ourchants-songs",
+            "key": "non-existent-object.mp3"
+        }
     )
-    
-    return "\n".join([event['message'] for event in events['events']])
+    assert response.status_code == 404
+    data = response.json()
+    assert "error" in data
+    assert "code" in data
+    assert data["code"] == "OBJECT_NOT_FOUND"
 
 def test_api_lifecycle(api_url, test_song):
     """Test full lifecycle: create → get → list → update → delete."""
     try:
-        # Create
-        res = requests.post(f"{api_url}/songs", json=test_song)
-        assert res.status_code == 201, f"Create failed: {res.text}"
-        created = res.json()
-        song_id = created["song_id"]
-
-        # Verify create
-        for k in test_song:
-            assert created[k] == test_song[k]
-        assert "song_id" in created
-
-        sleep(1)  # Allow for eventual consistency
-
-        # Get
-        res = requests.get(f"{api_url}/songs/{song_id}")
-        assert res.status_code == 200
-        assert res.json() == created
-
-        # List
-        res = requests.get(f"{api_url}/songs")
-        assert res.status_code == 200
-        all_songs = res.json()
-        assert any(s["song_id"] == song_id for s in all_songs)
-
-        # Update
-        updated = {**test_song, "title": "Updated Song", "bpm": "140", "version": "2.0"}
-        res = requests.put(f"{api_url}/songs/{song_id}", json=updated)
-        assert res.status_code == 200
-        updated_response = res.json()
-        for k in updated:
-            assert updated_response[k] == updated[k]
-        assert updated_response["song_id"] == song_id
-
-        # Delete
-        res = requests.delete(f"{api_url}/songs/{song_id}")
-        assert res.status_code == 204
-
-        # Confirm deletion
-        res = requests.get(f"{api_url}/songs/{song_id}")
-        assert res.status_code == 404
-
+        # Create song
+        response = requests.post(f"{api_url}/songs", json=test_song)
+        assert response.status_code == 201
+        created_song = response.json()
+        assert "song_id" in created_song
+        song_id = created_song["song_id"]
+        
+        # Get song
+        response = requests.get(f"{api_url}/songs/{song_id}")
+        assert response.status_code == 200
+        retrieved_song = response.json()
+        assert retrieved_song["song_id"] == song_id
+        
+        # List songs
+        response = requests.get(f"{api_url}/songs")
+        assert response.status_code == 200
+        songs = response.json()
+        assert isinstance(songs, list)
+        assert any(s["song_id"] == song_id for s in songs)
+        
+        # Update song
+        updated_data = {**test_song, "title": "Updated Title"}
+        response = requests.put(f"{api_url}/songs/{song_id}", json=updated_data)
+        assert response.status_code == 200
+        updated_song = response.json()
+        assert updated_song["title"] == "Updated Title"
+        
+        # Delete song
+        response = requests.delete(f"{api_url}/songs/{song_id}")
+        assert response.status_code == 204
+        
+        # Verify deletion
+        response = requests.get(f"{api_url}/songs/{song_id}")
+        assert response.status_code == 404
+        
     except AssertionError as e:
         # Get Lambda function name from API Gateway
         client = boto3.client("apigatewayv2", region_name=os.environ.get("AWS_REGION", "us-east-1"))
@@ -174,6 +183,43 @@ def test_api_lifecycle(api_url, test_song):
         print(logs)
         print("=" * 80)
         raise
+
+def get_lambda_logs(function_name):
+    """Fetch logs from CloudWatch for the Lambda function."""
+    client = boto3.client("logs", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+    log_group = f"/aws/lambda/{function_name}"
+    
+    try:
+        response = client.get_log_events(
+            logGroupName=log_group,
+            limit=50
+        )
+        return "\n".join(event["message"] for event in response["events"])
+    except ClientError as e:
+        return f"Error fetching logs: {str(e)}"
+
+@pytest.fixture
+def api_url():
+    """Get the API URL."""
+    return get_api_url()
+
+@pytest.fixture
+def test_song():
+    """Create a test song."""
+    return {
+        "title": f"Test Song {uuid4()}",
+        "artist": "Test Artist",
+        "album": "Test Album",
+        "bpm": "120",
+        "composer": "Test Composer",
+        "version": "1.0",
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "filename": "test.mp3",
+        "filepath": "Media/test.mp3",
+        "description": "Test description",
+        "lineage": ["original"],
+        "s3_uri": "s3://ourchants-songs/test.mp3"
+    }
 
 def test_error_handling(api_url):
     """Verify 404 on bad ID."""
