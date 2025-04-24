@@ -107,7 +107,7 @@ def test_list_songs_artist_filter(client, mock_dynamodb):
         assert response['statusCode'] == 201
     
     # Test artist filter
-    response = client('GET', '/songs', query_params={'artist': 'Artist A'})
+    response = client('GET', '/songs', query_params={'artist_filter': 'Artist A'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 2
@@ -115,7 +115,7 @@ def test_list_songs_artist_filter(client, mock_dynamodb):
     assert all(song['artist'] == 'Artist A' for song in result['items'])
     
     # Test artist filter with pagination
-    response = client('GET', '/songs', query_params={'artist': 'Artist B', 'limit': '1', 'offset': '0'})
+    response = client('GET', '/songs', query_params={'artist_filter': 'Artist B', 'limit': '1', 'offset': '0'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 1

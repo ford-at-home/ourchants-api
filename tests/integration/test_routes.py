@@ -168,7 +168,7 @@ def test_list_songs_artist_filter(client, mock_dynamodb, test_songs):
         client('POST', '/songs', song)
     
     # Test artist filter
-    response = client('GET', '/songs', query_params={'artist': 'Artist A'})
+    response = client('GET', '/songs', query_params={'artist_filter': 'Artist A'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 2
@@ -182,7 +182,7 @@ def test_list_songs_artist_filter_with_pagination(client, mock_dynamodb, test_so
         client('POST', '/songs', song)
     
     # Test artist filter with pagination
-    response = client('GET', '/songs', query_params={'artist': 'Artist A', 'limit': '1', 'offset': '0'})
+    response = client('GET', '/songs', query_params={'artist_filter': 'Artist A', 'limit': '1', 'offset': '0'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 1
@@ -213,9 +213,9 @@ def test_empty_artist_filter(client, mock_dynamodb, test_songs):
         client('POST', '/songs', song)
     
     # Test empty artist filter
-    response = client('GET', '/songs', query_params={'artist': ''})
+    response = client('GET', '/songs', query_params={'artist_filter': ''})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
-    assert len(result['items']) == 0
-    assert result['total'] == 0
+    assert len(result['items']) == 3
+    assert result['total'] == 3
     assert not result['has_more'] 

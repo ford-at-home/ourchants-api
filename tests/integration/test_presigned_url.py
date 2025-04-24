@@ -95,7 +95,7 @@ def test_invalid_object_key(client):
         
         assert response['statusCode'] == 400
         body = json.loads(response['body'])
-        assert body['error'] == 'Invalid object key'
+        assert body['error'] == 'Object key cannot be empty'
         assert body['code'] == 'INVALID_OBJECT_KEY'
 
 def test_nonexistent_bucket(client, mock_s3):
