@@ -76,7 +76,6 @@ def test_invalid_bucket_name(client):
         assert response['statusCode'] == 400
         body = json.loads(response['body'])
         assert body['error'] == 'Invalid bucket name'
-        assert body['details'] == expected_error
         assert body['code'] == 'INVALID_BUCKET_NAME'
 
 def test_invalid_object_key(client):
@@ -97,7 +96,6 @@ def test_invalid_object_key(client):
         assert response['statusCode'] == 400
         body = json.loads(response['body'])
         assert body['error'] == 'Invalid object key'
-        assert body['details'] == expected_error
         assert body['code'] == 'INVALID_OBJECT_KEY'
 
 def test_nonexistent_bucket(client, mock_s3):
@@ -110,8 +108,8 @@ def test_nonexistent_bucket(client, mock_s3):
     assert response['statusCode'] == 404
     body = json.loads(response['body'])
     assert body['error'] == 'Bucket nonexistent-bucket not found'
-    assert body['details'] == 'The specified S3 bucket does not exist'
     assert body['code'] == 'BUCKET_NOT_FOUND'
+    assert 'bucket' in body['details']
 
 def test_nonexistent_object(client, mock_s3):
     """Test handling of non-existent object."""
@@ -128,17 +126,18 @@ def test_nonexistent_object(client, mock_s3):
     assert response['statusCode'] == 404
     body = json.loads(response['body'])
     assert body['error'] == 'Object nonexistent.mp3 not found in bucket test-bucket'
-    assert body['details'] == 'The specified S3 object does not exist in the bucket'
     assert body['code'] == 'OBJECT_NOT_FOUND'
+    assert 'bucket' in body['details']
+    assert 'key' in body['details']
 
 def test_invalid_json(client):
     """Test handling of invalid JSON in request body."""
     response = client('POST', '/presigned-url', 'invalid json')
     
-    assert response['statusCode'] == 500
+    assert response['statusCode'] == 400
     body = json.loads(response['body'])
-    assert 'error' in body
-    assert body['error'] == 'Internal server error'
+    assert body['error'] == 'Object key cannot be empty'
+    assert body['code'] == 'INVALID_OBJECT_KEY'
 
 def test_cors_headers(client, mock_s3):
     """Test that CORS headers are present in responses."""

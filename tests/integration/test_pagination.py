@@ -5,11 +5,36 @@ from api.core.api import SongsApi
 def test_list_songs_pagination(client, mock_dynamodb):
     # Create test data
     test_songs = [
-        {'song_id': '1', 'title': 'Song 1', 'artist': 'Artist A'},
-        {'song_id': '2', 'title': 'Song 2', 'artist': 'Artist A'},
-        {'song_id': '3', 'title': 'Song 3', 'artist': 'Artist B'},
-        {'song_id': '4', 'title': 'Song 4', 'artist': 'Artist B'},
-        {'song_id': '5', 'title': 'Song 5', 'artist': 'Artist C'}
+        {
+            'song_id': '1',
+            'title': 'Song 1',
+            'artist': 'Artist A',
+            's3_uri': 's3://ourchants-songs/song1.mp3'
+        },
+        {
+            'song_id': '2',
+            'title': 'Song 2',
+            'artist': 'Artist A',
+            's3_uri': 's3://ourchants-songs/song2.mp3'
+        },
+        {
+            'song_id': '3',
+            'title': 'Song 3',
+            'artist': 'Artist B',
+            's3_uri': 's3://ourchants-songs/song3.mp3'
+        },
+        {
+            'song_id': '4',
+            'title': 'Song 4',
+            'artist': 'Artist B',
+            's3_uri': 's3://ourchants-songs/song4.mp3'
+        },
+        {
+            'song_id': '5',
+            'title': 'Song 5',
+            'artist': 'Artist C',
+            's3_uri': 's3://ourchants-songs/song5.mp3'
+        }
     ]
     
     # Create songs using the client
@@ -44,11 +69,36 @@ def test_list_songs_pagination(client, mock_dynamodb):
 def test_list_songs_artist_filter(client, mock_dynamodb):
     # Create test data
     test_songs = [
-        {'song_id': '1', 'title': 'Song 1', 'artist': 'Artist A'},
-        {'song_id': '2', 'title': 'Song 2', 'artist': 'Artist A'},
-        {'song_id': '3', 'title': 'Song 3', 'artist': 'Artist B'},
-        {'song_id': '4', 'title': 'Song 4', 'artist': 'Artist B'},
-        {'song_id': '5', 'title': 'Song 5', 'artist': 'Artist C'}
+        {
+            'song_id': '1',
+            'title': 'Song 1',
+            'artist': 'Artist A',
+            's3_uri': 's3://ourchants-songs/song1.mp3'
+        },
+        {
+            'song_id': '2',
+            'title': 'Song 2',
+            'artist': 'Artist A',
+            's3_uri': 's3://ourchants-songs/song2.mp3'
+        },
+        {
+            'song_id': '3',
+            'title': 'Song 3',
+            'artist': 'Artist B',
+            's3_uri': 's3://ourchants-songs/song3.mp3'
+        },
+        {
+            'song_id': '4',
+            'title': 'Song 4',
+            'artist': 'Artist B',
+            's3_uri': 's3://ourchants-songs/song4.mp3'
+        },
+        {
+            'song_id': '5',
+            'title': 'Song 5',
+            'artist': 'Artist C',
+            's3_uri': 's3://ourchants-songs/song5.mp3'
+        }
     ]
     
     # Create songs using the client
@@ -57,7 +107,7 @@ def test_list_songs_artist_filter(client, mock_dynamodb):
         assert response['statusCode'] == 201
     
     # Test artist filter
-    response = client('GET', '/songs', query_params={'artist_filter': 'Artist A'})
+    response = client('GET', '/songs', query_params={'artist': 'Artist A'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 2
@@ -65,7 +115,7 @@ def test_list_songs_artist_filter(client, mock_dynamodb):
     assert all(song['artist'] == 'Artist A' for song in result['items'])
     
     # Test artist filter with pagination
-    response = client('GET', '/songs', query_params={'artist_filter': 'Artist B', 'limit': '1', 'offset': '0'})
+    response = client('GET', '/songs', query_params={'artist': 'Artist B', 'limit': '1', 'offset': '0'})
     assert response['statusCode'] == 200
     result = json.loads(response['body'])
     assert len(result['items']) == 1

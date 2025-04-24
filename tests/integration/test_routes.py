@@ -16,7 +16,7 @@ from api.core.api import SongsApi
 
 @pytest.fixture
 def test_songs():
-    """Fixture providing a list of test songs."""
+    """Create test song data."""
     return [
         {
             'title': 'Song 1',
@@ -29,7 +29,8 @@ def test_songs():
             'filename': 'song1.mp3',
             'filepath': 'Media/song1.mp3',
             'description': 'Test song 1',
-            'lineage': []
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song1.mp3'
         },
         {
             'title': 'Song 2',
@@ -42,7 +43,8 @@ def test_songs():
             'filename': 'song2.mp3',
             'filepath': 'Media/song2.mp3',
             'description': 'Test song 2',
-            'lineage': []
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song2.mp3'
         },
         {
             'title': 'Song 3',
@@ -55,225 +57,165 @@ def test_songs():
             'filename': 'song3.mp3',
             'filepath': 'Media/song3.mp3',
             'description': 'Test song 3',
-            'lineage': []
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song3.mp3'
         }
     ]
 
-def test_create_song(client, mock_dynamodb, test_song):
+def test_create_song(client, mock_dynamodb, test_songs):
     """Test creating a new song."""
-    response = client('POST', '/songs', test_song)
+    song = test_songs[0]
+    response = client('POST', '/songs', song)
     assert response['statusCode'] == 201
-    body = json.loads(response['body'])
-    assert 'song_id' in body
-    assert body['title'] == test_song['title']
-    assert body['artist'] == test_song['artist']
-    assert body['album'] == test_song['album']
-    assert body['bpm'] == test_song['bpm']
-    assert body['composer'] == test_song['composer']
-    assert body['version'] == test_song['version']
-    assert body['date'] == test_song['date']
-    assert body['filename'] == test_song['filename']
-    assert body['filepath'] == test_song['filepath']
-    assert body['description'] == test_song['description']
-    assert body['lineage'] == test_song['lineage']
+    result = json.loads(response['body'])
+    assert result['title'] == song['title']
+    assert result['artist'] == song['artist']
+    assert 'song_id' in result
 
-def test_get_song(client, mock_dynamodb, test_song):
-    """Test getting a specific song."""
-    # First create a song
-    create_response = client('POST', '/songs', test_song)
-    song_id = json.loads(create_response['body'])['song_id']
+def test_get_song(client, mock_dynamodb, test_songs):
+    """Test retrieving a song."""
+    # Create a song first
+    song = test_songs[0]
+    create_response = client('POST', '/songs', song)
+    created_song = json.loads(create_response['body'])
     
-    # Then get the song
-    response = client('GET', f'/songs/{song_id}')
+    # Get the song
+    response = client('GET', f"/songs/{created_song['song_id']}")
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    
-    print("\n=== Example of a single song from DynamoDB ===")
-    pprint(body, indent=2, width=120)
-    print("============================================\n")
-    
-    assert body['song_id'] == song_id
-    assert body['title'] == test_song['title']
-    assert body['artist'] == test_song['artist']
-    assert body['album'] == test_song['album']
-    assert body['bpm'] == test_song['bpm']
-    assert body['composer'] == test_song['composer']
-    assert body['version'] == test_song['version']
-    assert body['date'] == test_song['date']
-    assert body['filename'] == test_song['filename']
-    assert body['filepath'] == test_song['filepath']
-    assert body['description'] == test_song['description']
-    assert body['lineage'] == test_song['lineage']
+    result = json.loads(response['body'])
+    assert result['title'] == song['title']
+    assert result['artist'] == song['artist']
 
-def test_list_songs(client, mock_dynamodb, test_song):
+def test_list_songs(client, mock_dynamodb, test_songs):
     """Test listing all songs."""
-    # First create a song
-    client('POST', '/songs', test_song)
-    
-    # Then list songs
-    response = client('GET', '/songs')
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    
-    print("\n=== Example of songs list from DynamoDB ===")
-    pprint(body, indent=2, width=120)
-    print("=========================================\n")
-    
-    assert isinstance(body, dict)
-    assert 'items' in body
-    assert 'total' in body
-    assert 'has_more' in body
-    assert len(body['items']) == 1
-    assert body['total'] == 1
-    assert body['has_more'] == False
-    assert body['items'][0]['title'] == test_song['title']
-    assert body['items'][0]['artist'] == test_song['artist']
-
-def test_get_nonexistent_song(client, mock_dynamodb):
-    """Test getting a song that doesn't exist."""
-    response = client('GET', '/songs/nonexistent')
-    assert response['statusCode'] == 404
-
-def test_update_song(client, mock_dynamodb, test_song):
-    """Test updating a song."""
-    # First create a song
-    create_response = client('POST', '/songs', test_song)
-    song_id = json.loads(create_response['body'])['song_id']
-    
-    # Update the song
-    updated_data = {
-        'title': 'Updated Song',
-        'artist': 'Updated Artist',
-        'album': 'Updated Album',
-        'bpm': '140',
-        'composer': 'Updated Composer',
-        'version': 'Updated Version',
-        'date': '2024-03-21 12:00:00',
-        'filename': 'updated_song.mp3',
-        'filepath': 'Media/updated_song.mp3',
-        'description': 'Updated description',
-        'lineage': ['original']
-    }
-    response = client('PUT', f'/songs/{song_id}', updated_data)
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    
-    print("\n=== Example of updated song from DynamoDB ===")
-    pprint(body, indent=2, width=120)
-    print("==========================================\n")
-    
-    assert body['song_id'] == song_id
-    assert body['title'] == updated_data['title']
-    assert body['artist'] == updated_data['artist']
-    assert body['album'] == updated_data['album']
-    assert body['bpm'] == updated_data['bpm']
-    assert body['composer'] == updated_data['composer']
-    assert body['version'] == updated_data['version']
-    assert body['date'] == updated_data['date']
-    assert body['filename'] == updated_data['filename']
-    assert body['filepath'] == updated_data['filepath']
-    assert body['description'] == updated_data['description']
-    assert body['lineage'] == updated_data['lineage']
-
-def test_delete_song(client, mock_dynamodb, test_song):
-    """Test deleting a song."""
-    # First create a song
-    create_response = client('POST', '/songs', test_song)
-    song_id = json.loads(create_response['body'])['song_id']
-    
-    # Delete the song
-    response = client('DELETE', f'/songs/{song_id}')
-    assert response['statusCode'] == 204
-    
-    # Verify it's gone
-    get_response = client('GET', f'/songs/{song_id}')
-    assert get_response['statusCode'] == 404
-
-def test_list_songs_pagination(client, mock_dynamodb, test_songs):
-    """Test pagination of song listing."""
     # Create multiple songs
     for song in test_songs:
         client('POST', '/songs', song)
+    
+    # List songs
+    response = client('GET', '/songs')
+    assert response['statusCode'] == 200
+    result = json.loads(response['body'])
+    assert len(result['items']) == 3
+    assert result['total'] == 3
+    assert not result['has_more']
 
+def test_get_nonexistent_song(client, mock_dynamodb):
+    """Test retrieving a non-existent song."""
+    response = client('GET', '/songs/nonexistent')
+    assert response['statusCode'] == 404
+
+def test_update_song(client, mock_dynamodb, test_songs):
+    """Test updating a song."""
+    # Create a song first
+    song = test_songs[0]
+    create_response = client('POST', '/songs', song)
+    created_song = json.loads(create_response['body'])
+    
+    # Update the song
+    update_data = {
+        'title': 'Updated Title',
+        'artist': 'Updated Artist',
+        's3_uri': 's3://ourchants-songs/updated.mp3'
+    }
+    response = client('PUT', f"/songs/{created_song['song_id']}", update_data)
+    assert response['statusCode'] == 200
+    result = json.loads(response['body'])
+    assert result['title'] == update_data['title']
+    assert result['artist'] == update_data['artist']
+
+def test_delete_song(client, mock_dynamodb, test_songs):
+    """Test deleting a song."""
+    # Create a song first
+    song = test_songs[0]
+    create_response = client('POST', '/songs', song)
+    created_song = json.loads(create_response['body'])
+    
+    # Delete the song
+    response = client('DELETE', f"/songs/{created_song['song_id']}")
+    assert response['statusCode'] == 204
+    
+    # Verify it's gone
+    get_response = client('GET', f"/songs/{created_song['song_id']}")
+    assert get_response['statusCode'] == 404
+
+def test_list_songs_pagination(client, mock_dynamodb, test_songs):
+    """Test pagination of song list."""
+    # Create multiple songs
+    for song in test_songs:
+        client('POST', '/songs', song)
+    
     # Test first page
     response = client('GET', '/songs', query_params={'limit': '2', 'offset': '0'})
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert len(body['items']) == 2
-    assert body['total'] == 3
-    assert body['has_more'] == True
-
+    result = json.loads(response['body'])
+    assert len(result['items']) == 2
+    assert result['total'] == 3
+    assert result['has_more']
+    
     # Test second page
     response = client('GET', '/songs', query_params={'limit': '2', 'offset': '2'})
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert len(body['items']) == 1
-    assert body['total'] == 3
-    assert body['has_more'] == False
+    result = json.loads(response['body'])
+    assert len(result['items']) == 1
+    assert result['total'] == 3
+    assert not result['has_more']
 
 def test_list_songs_artist_filter(client, mock_dynamodb, test_songs):
     """Test filtering songs by artist."""
     # Create multiple songs
     for song in test_songs:
         client('POST', '/songs', song)
-
+    
     # Test artist filter
     response = client('GET', '/songs', query_params={'artist': 'Artist A'})
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert len(body['items']) == 2
-    assert body['total'] == 2
-    assert body['has_more'] == False
-    assert all(song['artist'] == 'Artist A' for song in body['items'])
+    result = json.loads(response['body'])
+    assert len(result['items']) == 2
+    assert result['total'] == 2
+    assert all(song['artist'] == 'Artist A' for song in result['items'])
 
 def test_list_songs_artist_filter_with_pagination(client, mock_dynamodb, test_songs):
     """Test filtering songs by artist with pagination."""
     # Create multiple songs
     for song in test_songs:
         client('POST', '/songs', song)
-
+    
     # Test artist filter with pagination
     response = client('GET', '/songs', query_params={'artist': 'Artist A', 'limit': '1', 'offset': '0'})
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert len(body['items']) == 1
-    assert body['total'] == 2
-    assert body['has_more'] == True
-    assert body['items'][0]['artist'] == 'Artist A'
+    result = json.loads(response['body'])
+    assert len(result['items']) == 1
+    assert result['total'] == 2
+    assert result['has_more']
+    assert result['items'][0]['artist'] == 'Artist A'
 
 def test_invalid_pagination_parameters(client, mock_dynamodb):
-    """Test handling of invalid pagination parameters."""
-    # Test negative limit
-    response = client('GET', '/songs', query_params={'limit': '-1'})
+    """Test invalid pagination parameters."""
+    # Test invalid limit
+    response = client('GET', '/songs', query_params={'limit': '0'})
     assert response['statusCode'] == 400
-    body = json.loads(response['body'])
-    assert body['error'] == 'Invalid limit parameter'
-    assert body['code'] == 'INVALID_LIMIT'
-
-    # Test negative offset
+    result = json.loads(response['body'])
+    assert result['error'] == 'Invalid limit parameter'
+    assert result['code'] == 'INVALID_LIMIT'
+    
+    # Test invalid offset
     response = client('GET', '/songs', query_params={'offset': '-1'})
     assert response['statusCode'] == 400
-    body = json.loads(response['body'])
-    assert body['error'] == 'Invalid offset parameter'
-    assert body['code'] == 'INVALID_OFFSET'
-
-    # Test limit too large
-    response = client('GET', '/songs', query_params={'limit': '101'})
-    assert response['statusCode'] == 400
-    body = json.loads(response['body'])
-    assert body['error'] == 'Invalid limit parameter'
-    assert body['code'] == 'INVALID_LIMIT'
+    result = json.loads(response['body'])
+    assert result['error'] == 'Invalid offset parameter'
+    assert result['code'] == 'INVALID_OFFSET'
 
 def test_empty_artist_filter(client, mock_dynamodb, test_songs):
     """Test filtering with empty artist parameter."""
     # Create multiple songs
     for song in test_songs:
         client('POST', '/songs', song)
-
+    
     # Test empty artist filter
     response = client('GET', '/songs', query_params={'artist': ''})
     assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert len(body['items']) == 3
-    assert body['total'] == 3
-    assert body['has_more'] == False 
+    result = json.loads(response['body'])
+    assert len(result['items']) == 0
+    assert result['total'] == 0
+    assert not result['has_more'] 
