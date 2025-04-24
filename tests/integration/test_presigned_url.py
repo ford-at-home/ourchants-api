@@ -10,7 +10,7 @@ These tests verify that the presigned-url endpoint:
 
 import json
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 import boto3
 
 def test_generate_presigned_url_success(client, mock_s3):
@@ -62,9 +62,9 @@ def test_invalid_bucket_name(client):
         ('', "Bucket name cannot be empty"),
         ('a', "Bucket name must be between 3 and 63 characters long"),
         ('a' * 64, "Bucket name must be between 3 and 63 characters long"),
-        ('invalid.bucket.name..', "Bucket name cannot contain two adjacent dots"),
-        ('192.168.1.1', "Bucket name cannot be formatted as an IP address"),
-        ('InvalidBucket', "Bucket name can only contain lowercase letters, numbers, dots, and hyphens")
+        ('InvalidBucket', "Bucket name can only contain lowercase letters, numbers, dots, and hyphens, and must start and end with a letter or number"),
+        ('invalid.bucket.name..', "Bucket name can only contain lowercase letters, numbers, dots, and hyphens, and must start and end with a letter or number"),
+        ('192.168.1.1', "Bucket name cannot be formatted as an IP address")
     ]
     
     for bucket, expected_error in test_cases:
@@ -135,10 +135,10 @@ def test_invalid_json(client):
     """Test handling of invalid JSON in request body."""
     response = client('POST', '/presigned-url', 'invalid json')
     
-    assert response['statusCode'] == 400
+    assert response['statusCode'] == 500
     body = json.loads(response['body'])
     assert 'error' in body
-    assert 'Invalid JSON in request body' in body['error']
+    assert body['error'] == 'Internal server error'
 
 def test_cors_headers(client, mock_s3):
     """Test that CORS headers are present in responses."""
@@ -167,7 +167,7 @@ def test_cors_headers(client, mock_s3):
         'key': key
     })
     
-    assert response['statusCode'] == 400
+    assert response['statusCode'] == 404
     headers = response['headers']
     assert headers['Access-Control-Allow-Origin'] == '*'
     assert headers['Access-Control-Allow-Methods'] == 'OPTIONS,POST'

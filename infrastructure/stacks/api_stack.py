@@ -59,9 +59,10 @@ class ApiStack(Stack):
             self, "SongsHttpApi",
             description="HTTP API for managing songs",
             cors_preflight=apigw.CorsPreflightOptions(
-                allow_origins=["http://ourchants-website.s3-website-us-east-1.amazonaws.com"],
+                allow_origins=["https://ourchants.com", "http://ourchants-website.s3-website-us-east-1.amazonaws.com"],
                 allow_methods=[apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST, 
-                             apigw.CorsHttpMethod.PUT, apigw.CorsHttpMethod.DELETE],
+                             apigw.CorsHttpMethod.PUT, apigw.CorsHttpMethod.DELETE,
+                             apigw.CorsHttpMethod.OPTIONS],
                 allow_headers=["Content-Type", "Accept"],
                 max_age=Duration.seconds(3000)
             )

@@ -77,6 +77,24 @@ components:
           items:
             type: string
           example: []
+        s3_uri:
+          type: string
+          description: S3 URI of the audio file
+          example: "s3://ourchants-songs/songs/123/21_wairaitirai_suntarai_snippet-_.mp3"
+    
+    SongList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Song'
+        total:
+          type: integer
+          description: Total number of songs matching the filter
+        has_more:
+          type: boolean
+          description: Whether there are more songs available
     
     Error:
       type: object
@@ -84,25 +102,66 @@ components:
         error:
           type: string
           description: Error message
-        status_code:
-          type: integer
-          description: HTTP status code
+        details:
+          type: string
+          description: Detailed error message
+        code:
+          type: string
+          description: Error code
+          enum:
+            - INVALID_REQUEST
+            - INVALID_PAGINATION
+            - INVALID_LIMIT
+            - INVALID_OFFSET
+            - INVALID_BUCKET_NAME
+            - INVALID_OBJECT_KEY
+            - BUCKET_NOT_FOUND
+            - OBJECT_NOT_FOUND
+            - INTERNAL_ERROR
 
 paths:
   /songs:
     get:
       summary: List all songs
-      description: Retrieves a list of all songs in the database
+      description: Retrieves a list of songs with pagination and filtering support
       operationId: listSongs
+      parameters:
+        - name: artist_filter
+          in: query
+          description: Filter songs by artist name
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of items per page (1-100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of items to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
       responses:
         '200':
           description: List of songs retrieved successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Song'
+                $ref: '#/components/schemas/SongList'
+        '400':
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -128,7 +187,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Song'
         '400':
-          description: Invalid request body
+          description: Validation error
           content:
             application/json:
               schema:
@@ -192,7 +251,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Song'
         '400':
-          description: Invalid request body
+          description: Validation error
           content:
             application/json:
               schema:
@@ -212,13 +271,63 @@ paths:
     
     delete:
       summary: Delete a song
-      description: Deletes a specific song by its ID
+      description: Deletes a song by its ID
       operationId: deleteSong
       responses:
         '204':
           description: Song deleted successfully
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /presigned-url:
+    post:
+      summary: Generate pre-signed URL
+      description: Generates a pre-signed URL for accessing an S3 object
+      operationId: generatePresignedUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+              properties:
+                bucket:
+                  type: string
+                  description: S3 bucket name
+                  example: "ourchants-songs"
+                key:
+                  type: string
+                  description: S3 object key
+                  example: "songs/123/21_wairaitirai_suntarai_snippet-_.mp3"
+      responses:
+        '200':
+          description: Pre-signed URL generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Pre-signed URL for accessing the object
+                  expiresIn:
+                    type: integer
+                    description: URL expiration time in seconds
+                    example: 3600
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Song not found
+          description: Bucket or object not found
           content:
             application/json:
               schema:

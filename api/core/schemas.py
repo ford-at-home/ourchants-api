@@ -19,7 +19,7 @@ class SongSchema(Schema):
     filepath = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
     lineage = fields.List(fields.String(), allow_none=True)
-    s3_uri = fields.String(allow_none=True)  # S3 URI of the audio file
+    s3_uri = fields.String(required=True, validate=validate.Length(min=1))  # S3 URI is required
 
     class Meta:
         unknown = EXCLUDE  # Reject unknown fields
@@ -37,7 +37,11 @@ class SongSchema(Schema):
         """Ensure all fields have default values."""
         for field in self.fields:
             if field not in data:
-                data[field] = None
+                if field == 's3_uri':
+                    # For s3_uri, use an empty string instead of None
+                    data[field] = ''
+                else:
+                    data[field] = None
         if 'lineage' in data and data['lineage'] is None:
             data['lineage'] = []
         return data

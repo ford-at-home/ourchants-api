@@ -4,7 +4,8 @@ from aws_cdk import (
     aws_s3 as s3,
     aws_iam as iam,
     RemovalPolicy,
-    CfnOutput
+    CfnOutput,
+    Duration
 )
 from constructs import Construct
 
@@ -24,10 +25,9 @@ class DatabaseStack(Stack):
         )
 
         # Import existing S3 bucket
-        self.bucket = s3.Bucket.from_bucket_attributes(
+        self.bucket = s3.Bucket.from_bucket_name(
             self, "SongsBucket",
-            bucket_name="ourchants-songs",
-            bucket_arn=f"arn:aws:s3:::ourchants-songs"
+            bucket_name="ourchants-songs"
         )
 
         # Export table name for other stacks to use

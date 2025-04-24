@@ -100,8 +100,30 @@
        ],
        "Effect": "Allow",
        "Resource": [
-        "arn:aws:s3:::ourchants-songs",
-        "arn:aws:s3:::ourchants-songs/*"
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::ourchants-songs"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::ourchants-songs/*"
+          ]
+         ]
+        }
        ]
       }
      ],
@@ -125,7 +147,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
      },
-     "S3Key": "8ecd9dd452bd75e068b904f35cd7ea454a954b790026d4f44ddc76320b2159b5.zip"
+     "S3Key": "bff79486ca6e8dc27f1bc23e77822441a40254bba0570b057b62053933b412a5.zip"
     },
     "Environment": {
      "Variables": {
@@ -156,7 +178,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "ApiStack/SongsLambda/Resource",
-    "aws:asset:path": "asset.8ecd9dd452bd75e068b904f35cd7ea454a954b790026d4f44ddc76320b2159b5",
+    "aws:asset:path": "asset.bff79486ca6e8dc27f1bc23e77822441a40254bba0570b057b62053933b412a5",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -173,9 +195,11 @@
       "GET",
       "POST",
       "PUT",
-      "DELETE"
+      "DELETE",
+      "OPTIONS"
      ],
      "AllowOrigins": [
+      "https://ourchants.com",
       "http://ourchants-website.s3-website-us-east-1.amazonaws.com"
      ],
      "MaxAge": 3000

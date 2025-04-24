@@ -22,10 +22,47 @@ logger.setLevel(logging.INFO)
 # Configure S3 client with rate limiting
 s3_config = Config(
     signature_version='s3v4',
-    retries={'max_attempts': 3},
+    retries={
+        'max_attempts': 3,
+        'mode': 'adaptive',
+        'total_max_attempts': 3
+    },
     connect_timeout=5,
-    read_timeout=5
+    read_timeout=5,
+    max_pool_connections=50
 )
+
+def error_response(message: str, code: str, status_code: int = 400, details: dict = None) -> dict:
+    """Return a standardized error response.
+    
+    Args:
+        message: The error message to display
+        code: The error code identifier
+        status_code: The HTTP status code (default: 400)
+        details: Additional error details (optional)
+    """
+    response = {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        },
+        'body': json.dumps({
+            'error': message,
+            'code': code
+        })
+    }
+    
+    if details:
+        response['body'] = json.dumps({
+            'error': message,
+            'code': code,
+            'details': details
+        })
+    
+    return response
 
 def lambda_handler(event, context):
     """Handle API Gateway HTTP API events."""
@@ -51,30 +88,80 @@ def lambda_handler(event, context):
         
         if not http_method or not path:
             logger.error("Invalid event structure: missing method or path")
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                    'Access-Control-Allow-Headers': 'Content-Type'
-                },
-                'body': json.dumps({
-                    'error': 'Invalid request format',
-                    'details': 'The request is missing required HTTP method or path',
-                    'code': 'INVALID_REQUEST'
-                })
-            }
+            return error_response("Invalid request format", "INVALID_REQUEST")
         
         # Route handling
         if path == '/songs':
             if http_method == 'GET':
-                songs = api.list_songs()
+                # Extract query parameters
+                query_params = event.get('queryStringParameters', {}) or {}
+                artist_filter = query_params.get('artist_filter')
+                
+                # Extract pagination parameters
+                try:
+                    limit = int(query_params.get('limit', '20'))
+                    offset = int(query_params.get('offset', '0'))
+                except ValueError:
+                    return {
+                        'statusCode': 400,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+                            'Access-Control-Allow-Headers': 'Content-Type'
+                        },
+                        'body': json.dumps({
+                            'error': 'Invalid pagination parameters',
+                            'details': 'limit and offset must be valid integers',
+                            'code': 'INVALID_PAGINATION'
+                        })
+                    }
+                
+                # Validate pagination parameters
+                if limit < 1 or limit > 100:
+                    return {
+                        'statusCode': 400,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+                            'Access-Control-Allow-Headers': 'Content-Type'
+                        },
+                        'body': json.dumps({
+                            'error': 'Invalid limit parameter',
+                            'details': 'limit must be between 1 and 100',
+                            'code': 'INVALID_LIMIT'
+                        })
+                    }
+                
+                if offset < 0:
+                    return {
+                        'statusCode': 400,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+                            'Access-Control-Allow-Headers': 'Content-Type'
+                        },
+                        'body': json.dumps({
+                            'error': 'Invalid offset parameter',
+                            'details': 'offset must be non-negative',
+                            'code': 'INVALID_OFFSET'
+                        })
+                    }
+                
+                songs = api.list_songs(
+                    artist_filter=artist_filter,
+                    limit=limit,
+                    offset=offset
+                )
                 return {
                     'statusCode': 200,
                     'headers': {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type'
                     },
                     'body': json.dumps(songs)
                 }
@@ -91,44 +178,25 @@ def lambda_handler(event, context):
         elif path == '/presigned-url':
             if http_method == 'POST':
                 try:
-                    bucket = body.get('bucket', os.getenv('S3_BUCKET'))
+                    # Ensure body is a dictionary and has a key
+                    if not isinstance(body, dict) or not body:
+                        return error_response("Object key cannot be empty", "INVALID_OBJECT_KEY")
+                    
                     key = body.get('key')
+                    if not key:
+                        return error_response("Object key cannot be empty", "INVALID_OBJECT_KEY")
+                    
+                    bucket = body.get('bucket', os.getenv('S3_BUCKET'))
                     
                     # Validate bucket name
                     is_valid_bucket, bucket_error = validate_bucket_name(bucket)
                     if not is_valid_bucket:
-                        return {
-                            'statusCode': 400,
-                            'headers': {
-                                'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': '*',
-                                'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                                'Access-Control-Allow-Headers': 'Content-Type'
-                            },
-                            'body': json.dumps({
-                                'error': 'Invalid bucket name',
-                                'details': bucket_error,
-                                'code': 'INVALID_BUCKET_NAME'
-                            })
-                        }
+                        return error_response("Invalid bucket name", "INVALID_BUCKET_NAME")
                     
-                    # Validate key
+                    # Validate key format
                     is_valid_key, key_error = validate_object_key(key)
                     if not is_valid_key:
-                        return {
-                            'statusCode': 400,
-                            'headers': {
-                                'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': '*',
-                                'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                                'Access-Control-Allow-Headers': 'Content-Type'
-                            },
-                            'body': json.dumps({
-                                'error': 'Invalid object key',
-                                'details': key_error,
-                                'code': 'INVALID_OBJECT_KEY'
-                            })
-                        }
+                        return error_response("Invalid object key", "INVALID_OBJECT_KEY")
                     
                     # Check if bucket exists
                     try:
@@ -136,35 +204,26 @@ def lambda_handler(event, context):
                     except ClientError as e:
                         error_code = e.response.get('Error', {}).get('Code', '')
                         if error_code in ['404', 'NoSuchBucket']:
-                            return {
-                                'statusCode': 404,
-                                'headers': {
-                                    'Content-Type': 'application/json',
-                                    'Access-Control-Allow-Origin': '*',
-                                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                                    'Access-Control-Allow-Headers': 'Content-Type'
-                                },
-                                'body': json.dumps({
-                                    'error': f'Bucket {bucket} not found',
-                                    'details': 'The specified S3 bucket does not exist',
-                                    'code': 'BUCKET_NOT_FOUND'
-                                })
-                            }
+                            return error_response(
+                                f"Bucket {bucket} not found",
+                                "BUCKET_NOT_FOUND",
+                                404,
+                                {'bucket': bucket}
+                            )
                         elif error_code in ['403', 'Forbidden']:
-                            return {
-                                'statusCode': 404,
-                                'headers': {
-                                    'Content-Type': 'application/json',
-                                    'Access-Control-Allow-Origin': '*',
-                                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                                    'Access-Control-Allow-Headers': 'Content-Type'
-                                },
-                                'body': json.dumps({
-                                    'error': f'Bucket {bucket} not found or access denied',
-                                    'details': 'The specified S3 bucket does not exist or access is denied',
-                                    'code': 'BUCKET_NOT_FOUND'
-                                })
-                            }
+                            return error_response(
+                                f"Bucket {bucket} not found or access denied",
+                                "BUCKET_NOT_FOUND",
+                                404,
+                                {'bucket': bucket, 'reason': 'access_denied'}
+                            )
+                        elif error_code == 'ThrottlingException':
+                            return error_response(
+                                "Rate limit exceeded. Please try again later.",
+                                "RATE_LIMIT_EXCEEDED",
+                                429,
+                                {'retry_after': 5}
+                            )
                         raise
 
                     # Check if object exists
@@ -173,59 +232,62 @@ def lambda_handler(event, context):
                     except ClientError as e:
                         error_code = e.response.get('Error', {}).get('Code', '')
                         if error_code in ['404', 'NoSuchKey']:
-                            return {
-                                'statusCode': 404,
-                                'headers': {
-                                    'Content-Type': 'application/json',
-                                    'Access-Control-Allow-Origin': '*',
-                                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                                    'Access-Control-Allow-Headers': 'Content-Type'
-                                },
-                                'body': json.dumps({
-                                    'error': f'Object {key} not found in bucket {bucket}',
-                                    'details': 'The specified S3 object does not exist in the bucket',
-                                    'code': 'OBJECT_NOT_FOUND'
-                                })
-                            }
+                            return error_response(
+                                f"Object {key} not found in bucket {bucket}",
+                                "OBJECT_NOT_FOUND",
+                                404,
+                                {'bucket': bucket, 'key': key}
+                            )
+                        elif error_code == 'ThrottlingException':
+                            return error_response(
+                                "Rate limit exceeded. Please try again later.",
+                                "RATE_LIMIT_EXCEEDED",
+                                429,
+                                {'retry_after': 5}
+                            )
                         raise
                     
-                    url = s3_client.generate_presigned_url(
-                        'get_object',
-                        Params={
-                            'Bucket': bucket,
-                            'Key': key
-                        },
-                        ExpiresIn=3600
-                    )
-                    return {
-                        'statusCode': 200,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        },
-                        'body': json.dumps({
-                            'url': url,
-                            'expiresIn': 3600
-                        })
-                    }
+                    try:
+                        url = s3_client.generate_presigned_url(
+                            'get_object',
+                            Params={
+                                'Bucket': bucket,
+                                'Key': key
+                            },
+                            ExpiresIn=3600
+                        )
+                        return {
+                            'statusCode': 200,
+                            'headers': {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*',
+                                'Access-Control-Allow-Methods': 'OPTIONS,POST',
+                                'Access-Control-Allow-Headers': 'Content-Type'
+                            },
+                            'body': json.dumps({
+                                'url': url,
+                                'expiresIn': 3600
+                            })
+                        }
+                    except ClientError as e:
+                        error_code = e.response.get('Error', {}).get('Code', '')
+                        if error_code == 'ThrottlingException':
+                            return error_response(
+                                "Rate limit exceeded. Please try again later.",
+                                "RATE_LIMIT_EXCEEDED",
+                                429,
+                                {'retry_after': 5}
+                            )
+                        logger.error(f"Error generating pre-signed URL: {str(e)}")
+                        return error_response(
+                            "Failed to generate pre-signed URL",
+                            "INTERNAL_ERROR",
+                            500,
+                            {'error_code': error_code}
+                        )
                 except ClientError as e:
                     logger.error(f"Error generating pre-signed URL: {str(e)}")
-                    return {
-                        'statusCode': 500,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        },
-                        'body': json.dumps({
-                            'error': 'Failed to generate pre-signed URL',
-                            'details': str(e),
-                            'code': 'INTERNAL_ERROR'
-                        })
-                    }
+                    return error_response("Failed to generate pre-signed URL", "INTERNAL_ERROR", 500)
         elif path.startswith('/songs/'):
             song_id = path.split('/')[-1]
             if http_method == 'GET':

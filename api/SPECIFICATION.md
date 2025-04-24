@@ -21,6 +21,26 @@ Allowed methods: GET, POST, PUT, DELETE
 Allowed headers: Content-Type, Accept
 Max age: 3000 seconds
 
+## Pagination
+All list endpoints support pagination using the following query parameters:
+
+- `limit`: Number of items per page (optional, default: 20, max: 100)
+- `offset`: Number of items to skip (optional, default: 0)
+
+Example:
+```
+GET /songs?limit=20&offset=0
+```
+
+Response format for list endpoints:
+```typescript
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  has_more: boolean;
+}
+```
+
 ## Data Models
 
 ### Song Object
@@ -106,13 +126,24 @@ const song = await response.json();
 ### 3. List Songs
 - **Method**: GET
 - **Path**: `/songs`
+- **Query Parameters**:
+  - `artist` (optional): Filter songs by artist name
+  - `limit` (optional): Number of items per page (default: 20, max: 100)
+  - `offset` (optional): Number of items to skip (default: 0)
 - **Response**: 200 OK
-- **Response Body**: Array of song objects that have an s3_uri attribute
-- **Note**: Only songs with an s3_uri attribute will be returned in the list
-- **Example**:
+- **Response Body**: PaginatedResponse<Song>
+- **Example Request**:
 ```typescript
-const response = await fetch(`${API_BASE_URL}/songs`);
-const songs = await response.json();
+// Get first page of all songs
+const response = await fetch(`${API_BASE_URL}/songs?limit=20&offset=0`);
+const data = await response.json();
+// data.items: Song[]
+// data.total: number
+// data.has_more: boolean
+
+// Get songs by artist with pagination
+const response = await fetch(`${API_BASE_URL}/songs?artist=John&limit=20&offset=0`);
+const data = await response.json();
 ```
 
 ### 4. Update Song
@@ -297,6 +328,24 @@ if (audioUrl) {
   audioPlayer.src = audioUrl;
 }
 ```
+
+### Pagination
+- Always use pagination for list endpoints
+- Start with a reasonable page size (20-50 items)
+- Implement "Load More" or "Next Page" functionality
+- Cache paginated results when possible
+
+### Error Handling
+- Always check for error responses
+- Implement retry logic for 5xx errors
+- Handle rate limiting gracefully
+- Display user-friendly error messages
+
+### Performance
+- Use appropriate page sizes
+- Implement client-side caching
+- Prefetch next page data
+- Use compression when available
 
 ## Rate Limits and Quotas
 The API uses AWS API Gateway's default limits:

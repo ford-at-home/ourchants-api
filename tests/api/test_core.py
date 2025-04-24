@@ -18,10 +18,12 @@ def test_list_songs(mock_dynamodb, test_song):
     api.create_song(test_song)
     
     # List songs
-    songs = api.list_songs()
-    assert len(songs) == 1
-    assert songs[0]['title'] == test_song['title']
-    assert songs[0]['artist'] == test_song['artist']
+    result = api.list_songs()
+    assert len(result['items']) == 1
+    assert result['total'] == 1
+    assert result['has_more'] == False
+    assert result['items'][0]['title'] == test_song['title']
+    assert result['items'][0]['artist'] == test_song['artist']
 
 def test_create_song(mock_dynamodb, test_song):
     """Test creating a new song."""
