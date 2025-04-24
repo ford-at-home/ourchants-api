@@ -36,6 +36,9 @@ class GitHubOidcDeploymentRoleStack(Stack):
             max_session_duration=Duration.hours(1)
         )
 
+        # Broad for now — scope down later
+        deploy_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess"))
+
         # CDK permissions
         deploy_role.add_to_policy(iam.PolicyStatement(
             actions=[

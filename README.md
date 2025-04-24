@@ -1,3 +1,5 @@
+[![Deploy OurChants API](https://github.com/ford-at-home/ourchants-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/ford-at-home/ourchants-api/actions/workflows/deploy.yml)
+
 # OurChants API
 
 A serverless REST API for managing song data, built with AWS Lambda, API Gateway, and DynamoDB.
