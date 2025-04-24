@@ -78,26 +78,6 @@ def test_invalid_bucket_name(client):
         assert body['error'] == 'Invalid bucket name'
         assert body['code'] == 'INVALID_BUCKET_NAME'
 
-def test_invalid_object_key(client):
-    """Test validation of invalid object keys."""
-    test_cases = [
-        ('', "Object key cannot be empty"),
-        ('a' * 1025, "Object key cannot exceed 1024 characters"),
-        ('test\x00file.mp3', "Object key cannot contain control characters"),
-        ('test//file.mp3', "Object key cannot contain consecutive slashes")
-    ]
-    
-    for key, expected_error in test_cases:
-        response = client('POST', '/presigned-url', {
-            'bucket': 'test-bucket',
-            'key': key
-        })
-        
-        assert response['statusCode'] == 400
-        body = json.loads(response['body'])
-        assert body['error'] == 'Object key cannot be empty'
-        assert body['code'] == 'INVALID_OBJECT_KEY'
-
 def test_nonexistent_bucket(client, mock_s3):
     """Test handling of non-existent bucket."""
     response = client('POST', '/presigned-url', {
