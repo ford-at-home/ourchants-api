@@ -2,6 +2,7 @@
 from aws_cdk import App, Environment
 from stacks.db_stack import DatabaseStack
 from stacks.api_stack import ApiStack
+from github_oidc_stack import GitHubOidcDeploymentRoleStack
 
 app = App()
 
@@ -15,6 +16,12 @@ db_stack = DatabaseStack(
 api_stack = ApiStack(
     app, "ApiStack",
     db_stack=db_stack,
+    env=Environment(region="us-east-1")
+)
+
+# Create GitHub OIDC deployment role stack
+github_oidc_stack = GitHubOidcDeploymentRoleStack(
+    app, "GitHubOidcDeploymentRoleStack",
     env=Environment(region="us-east-1")
 )
 
