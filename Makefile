@@ -25,15 +25,31 @@ test-e2e:
 	@echo "🧪 Running end-to-end tests..."
 	PYTHONPATH=$(PYTHONPATH) pytest tests/e2e -v
 
-# Authentication Setup
-.PHONY: auth
-auth:
-	@echo "🔐 Setting up GitHub Actions authentication..."
+# Environment Setup
+.PHONY: setup-env
+setup-env:
+	@echo "🔧 Setting up environment..."
 	@if [ ! -f .env ]; then \
-		echo "Error: .env file not found"; \
-		exit 1; \
+		echo "# Environment variables for the Songs API" > .env; \
+		echo "# This file contains configuration settings for the application" >> .env; \
+		echo "" >> .env; \
+		echo "# AWS Configuration" >> .env; \
+		echo "AWS_REGION=$(REGION)" >> .env; \
+		echo "DYNAMODB_TABLE_NAME=ourchants-songs" >> .env; \
+		echo "S3_BUCKET=ourchants-songs" >> .env; \
+		echo "" >> .env; \
+		echo "# API Configuration" >> .env; \
+		echo "API_VERSION=1.0" >> .env; \
+		echo "API_STAGE=prod" >> .env; \
+		echo "✅ Created .env file"; \
+	else \
+		echo "✅ .env file already exists"; \
 	fi
 
+# Authentication Setup
+.PHONY: auth
+auth: setup-env
+	@echo "🔐 Setting up GitHub Actions authentication..."
 	@# Check for AWS credentials
 	@if [ ! -f ~/.aws/credentials ]; then \
 		echo "Error: AWS credentials not found. Please run 'aws configure' first."; \
@@ -72,14 +88,8 @@ auth:
 
 # Full Deployment
 .PHONY: deploy
-deploy: build
+deploy: build setup-env
 	@echo "🚀 Deploying to production..."
-	@# Set up environment
-	@if [ ! -f .env ]; then \
-		echo "Error: .env file not found"; \
-		exit 1; \
-	fi
-
 	@# Deploy application using deploy.sh
 	@echo "🚀 Deploying application..."
 	@chmod +x infrastructure/deploy.sh
@@ -122,6 +132,7 @@ help:
 	@echo "  make auth    - Set up GitHub Actions authentication"
 	@echo "  make diagnose - Run network diagnostics"
 	@echo "  make clean   - Clean build files and dependencies"
+	@echo "  make setup-env - Create .env file with default settings"
 	@echo ""
 	@echo "Variables:"
 	@echo "  REGION     - AWS region (default: us-east-1)"
