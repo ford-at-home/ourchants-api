@@ -178,31 +178,42 @@ def lambda_handler(event, context):
         elif path == '/presigned-url':
             if http_method == 'POST':
                 try:
+                    logger.info(f"Presigned URL request - Raw body: {raw_body}")
+                    logger.info(f"Presigned URL request - Parsed body: {body}")
+                    
                     # Ensure body is a dictionary and has a key
                     if not isinstance(body, dict) or not body:
+                        logger.error("Presigned URL request - Invalid body format")
                         return error_response("Object key cannot be empty", "INVALID_OBJECT_KEY")
                     
                     key = body.get('key')
                     if not key:
+                        logger.error("Presigned URL request - Missing key")
                         return error_response("Object key cannot be empty", "INVALID_OBJECT_KEY")
                     
                     bucket = body.get('bucket', os.getenv('S3_BUCKET'))
+                    logger.info(f"Presigned URL request - Bucket: {bucket}, Key: {key}")
                     
                     # Validate bucket name
                     is_valid_bucket, bucket_error = validate_bucket_name(bucket)
                     if not is_valid_bucket:
+                        logger.error(f"Presigned URL request - Invalid bucket: {bucket_error}")
                         return error_response("Invalid bucket name", "INVALID_BUCKET_NAME")
                     
                     # Validate key format
                     is_valid_key, key_error = validate_object_key(key)
                     if not is_valid_key:
+                        logger.error(f"Presigned URL request - Invalid key: {key_error}")
                         return error_response("Invalid object key", "INVALID_OBJECT_KEY")
                     
                     # Check if bucket exists
                     try:
+                        logger.info(f"Presigned URL request - Checking bucket existence: {bucket}")
                         s3_client.head_bucket(Bucket=bucket)
                     except ClientError as e:
                         error_code = e.response.get('Error', {}).get('Code', '')
+                        error_message = e.response.get('Error', {}).get('Message', '')
+                        logger.error(f"Presigned URL request - Bucket check failed: {error_code} - {error_message}")
                         if error_code in ['404', 'NoSuchBucket']:
                             return error_response(
                                 f"Bucket {bucket} not found",
@@ -228,9 +239,12 @@ def lambda_handler(event, context):
 
                     # Check if object exists
                     try:
+                        logger.info(f"Presigned URL request - Checking object existence: {bucket}/{key}")
                         s3_client.head_object(Bucket=bucket, Key=key)
                     except ClientError as e:
                         error_code = e.response.get('Error', {}).get('Code', '')
+                        error_message = e.response.get('Error', {}).get('Message', '')
+                        logger.error(f"Presigned URL request - Object check failed: {error_code} - {error_message}")
                         if error_code in ['404', 'NoSuchKey']:
                             return error_response(
                                 f"Object {key} not found in bucket {bucket}",
@@ -248,6 +262,7 @@ def lambda_handler(event, context):
                         raise
                     
                     try:
+                        logger.info(f"Presigned URL request - Generating URL for: {bucket}/{key}")
                         url = s3_client.generate_presigned_url(
                             'get_object',
                             Params={
@@ -256,6 +271,7 @@ def lambda_handler(event, context):
                             },
                             ExpiresIn=3600
                         )
+                        logger.info(f"Presigned URL request - Generated URL: {url}")
                         return {
                             'statusCode': 200,
                             'headers': {
@@ -271,6 +287,8 @@ def lambda_handler(event, context):
                         }
                     except ClientError as e:
                         error_code = e.response.get('Error', {}).get('Code', '')
+                        error_message = e.response.get('Error', {}).get('Message', '')
+                        logger.error(f"Presigned URL request - URL generation failed: {error_code} - {error_message}")
                         if error_code == 'ThrottlingException':
                             return error_response(
                                 "Rate limit exceeded. Please try again later.",
@@ -286,7 +304,9 @@ def lambda_handler(event, context):
                             {'error_code': error_code}
                         )
                 except ClientError as e:
-                    logger.error(f"Error generating pre-signed URL: {str(e)}")
+                    error_code = e.response.get('Error', {}).get('Code', '')
+                    error_message = e.response.get('Error', {}).get('Message', '')
+                    logger.error(f"Presigned URL request - Unexpected error: {error_code} - {error_message}")
                     return error_response("Failed to generate pre-signed URL", "INTERNAL_ERROR", 500)
         elif path.startswith('/songs/'):
             song_id = path.split('/')[-1]

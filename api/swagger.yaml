@@ -1,7 +1,14 @@
 openapi: 3.0.0
 info:
   title: OurChants API
-  description: A serverless REST API for managing song data
+  description: |
+    A serverless REST API for managing song data.
+    
+    Important Notes:
+    1. DynamoDB SDK Representation:
+       - The AWS SDK wraps all values in type descriptors (S, N, L, M, etc.)
+       - This is normal and should not be "fixed" or simplified
+       - The M->S->S pattern in responses is just the SDK's way of representing data
   version: 1.0.0
 
 servers:
@@ -19,6 +26,22 @@ servers:
 
 components:
   schemas:
+    DynamoDBString:
+      type: object
+      properties:
+        S:
+          type: string
+      description: DynamoDB string type descriptor
+    
+    DynamoDBList:
+      type: object
+      properties:
+        L:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamoDBString'
+      description: DynamoDB list type descriptor
+    
     Song:
       type: object
       required:
@@ -26,61 +49,57 @@ components:
         - artist
       properties:
         song_id:
-          type: string
-          format: uuid
+          $ref: '#/components/schemas/DynamoDBString'
           description: Unique identifier for the song
           readOnly: true
         title:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Title of the song
-          example: "21 Wairaitirai Suntarai snippet-?"
+          example: {"S": "21 Wairaitirai Suntarai snippet-?"}
         artist:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Artist who performed the song
-          example: "Muse"
+          example: {"S": "Muse"}
         album:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Album name
-          example: "Muse"
+          example: {"S": "Muse"}
         bpm:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Beats per minute of the song
-          example: "120"
+          example: {"S": "120"}
         composer:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Composer of the song
-          example: "Allah"
+          example: {"S": "Allah"}
         version:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Version or variation of the song
-          example: "del Tiempo"
+          example: {"S": "del Tiempo"}
         date:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/DynamoDBString'
           description: Date associated with the song
-          example: "2012-04-06 09:36:00"
+          example: {"S": "2012-04-06 09:36:00"}
         filename:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Name of the song file
-          example: "21_wairaitirai_suntarai_snippet-_.mp3"
+          example: {"S": "21_wairaitirai_suntarai_snippet-_.mp3"}
         filepath:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Path to the song file
-          example: "Media.localized/21_wairaitirai_suntarai_snippet-_.mp3"
+          example: {"S": "Media.localized/21_wairaitirai_suntarai_snippet-_.mp3"}
         description:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: Additional description or notes about the song
-          example: ""
+          example: {"S": ""}
         lineage:
-          type: array
+          $ref: '#/components/schemas/DynamoDBList'
           description: Track history or related songs
-          items:
-            type: string
-          example: []
+          example: {"L": [{"S": "original"}]}
         s3_uri:
-          type: string
+          $ref: '#/components/schemas/DynamoDBString'
           description: S3 URI of the audio file
-          example: "s3://ourchants-songs/songs/123/21_wairaitirai_suntarai_snippet-_.mp3"
+          example: {"S": "s3://ourchants-songs/songs/123/21_wairaitirai_suntarai_snippet-_.mp3"}
     
     SongList:
       type: object
@@ -250,14 +269,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Song'
-        '400':
-          description: Validation error
+        '404':
+          description: Song not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
-          description: Song not found
+        '400':
+          description: Validation error
           content:
             application/json:
               schema:
@@ -271,11 +290,17 @@ paths:
     
     delete:
       summary: Delete a song
-      description: Deletes a song by its ID
+      description: Deletes a specific song by its ID
       operationId: deleteSong
       responses:
         '204':
           description: Song deleted successfully
+        '404':
+          description: Song not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -295,6 +320,7 @@ paths:
             schema:
               type: object
               required:
+                - bucket
                 - key
               properties:
                 bucket:
@@ -304,7 +330,7 @@ paths:
                 key:
                   type: string
                   description: S3 object key
-                  example: "songs/123/21_wairaitirai_suntarai_snippet-_.mp3"
+                  example: "songs/123/song.mp3"
       responses:
         '200':
           description: Pre-signed URL generated successfully
@@ -315,19 +341,14 @@ paths:
                 properties:
                   url:
                     type: string
-                    description: Pre-signed URL for accessing the object
+                    description: Pre-signed URL
+                    example: "https://ourchants-songs.s3.amazonaws.com/songs/123/song.mp3?X-Amz-Algorithm=..."
                   expiresIn:
                     type: integer
                     description: URL expiration time in seconds
                     example: 3600
         '400':
           description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Bucket or object not found
           content:
             application/json:
               schema:

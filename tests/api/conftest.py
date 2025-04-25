@@ -10,6 +10,12 @@ The key difference between this and integration tests is that:
 - No actual AWS services are involved
 - Tests are faster and more isolated
 - Focus on testing individual functions
+
+Important Notes:
+1. DynamoDB SDK Representation:
+   - The AWS SDK wraps all values in type descriptors (S, N, L, M, etc.)
+   - This is normal and should not be "fixed" or simplified
+   - The M->S->S pattern in responses is just the SDK's way of representing data
 """
 
 import pytest

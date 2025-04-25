@@ -39,19 +39,19 @@
   {
     "items": [
       {
-        "song_id": "string",
-        "title": "string",
-        "artist": "string",
-        "album": "string",
-        "bpm": "string",
-        "composer": "string",
-        "version": "string",
-        "date": "string",
-        "filename": "string",
-        "filepath": "string",
-        "description": "string",
-        "lineage": ["string"],
-        "s3_uri": "string"
+        "song_id": { "S": "string" },
+        "title": { "S": "string" },
+        "artist": { "S": "string" },
+        "album": { "S": "string" },
+        "bpm": { "S": "string" },
+        "composer": { "S": "string" },
+        "version": { "S": "string" },
+        "date": { "S": "string" },
+        "filename": { "S": "string" },
+        "filepath": { "S": "string" },
+        "description": { "S": "string" },
+        "lineage": { "L": [{ "S": "string" }] },
+        "s3_uri": { "S": "string" }
       }
     ],
     "total": 0,
@@ -98,19 +98,19 @@
 - **Response**: 201 Created
   ```json
   {
-    "song_id": "string",
-    "title": "string",
-    "artist": "string",
-    "album": "string",
-    "bpm": "string",
-    "composer": "string",
-    "version": "string",
-    "date": "string",
-    "filename": "string",
-    "filepath": "string",
-    "description": "string",
-    "lineage": ["string"],
-    "s3_uri": "string"
+    "song_id": { "S": "string" },
+    "title": { "S": "string" },
+    "artist": { "S": "string" },
+    "album": { "S": "string" },
+    "bpm": { "S": "string" },
+    "composer": { "S": "string" },
+    "version": { "S": "string" },
+    "date": { "S": "string" },
+    "filename": { "S": "string" },
+    "filepath": { "S": "string" },
+    "description": { "S": "string" },
+    "lineage": { "L": [{ "S": "string" }] },
+    "s3_uri": { "S": "string" }
   }
   ```
 - **Error Responses**:
@@ -128,19 +128,19 @@
 - **Response**: 200 OK
   ```json
   {
-    "song_id": "string",
-    "title": "string",
-    "artist": "string",
-    "album": "string",
-    "bpm": "string",
-    "composer": "string",
-    "version": "string",
-    "date": "string",
-    "filename": "string",
-    "filepath": "string",
-    "description": "string",
-    "lineage": ["string"],
-    "s3_uri": "string"
+    "song_id": { "S": "string" },
+    "title": { "S": "string" },
+    "artist": { "S": "string" },
+    "album": { "S": "string" },
+    "bpm": { "S": "string" },
+    "composer": { "S": "string" },
+    "version": { "S": "string" },
+    "date": { "S": "string" },
+    "filename": { "S": "string" },
+    "filepath": { "S": "string" },
+    "description": { "S": "string" },
+    "lineage": { "L": [{ "S": "string" }] },
+    "s3_uri": { "S": "string" }
   }
   ```
 - **Error Responses**:
@@ -173,19 +173,19 @@
 - **Response**: 200 OK
   ```json
   {
-    "song_id": "string",
-    "title": "string",
-    "artist": "string",
-    "album": "string",
-    "bpm": "string",
-    "composer": "string",
-    "version": "string",
-    "date": "string",
-    "filename": "string",
-    "filepath": "string",
-    "description": "string",
-    "lineage": ["string"],
-    "s3_uri": "string"
+    "song_id": { "S": "string" },
+    "title": { "S": "string" },
+    "artist": { "S": "string" },
+    "album": { "S": "string" },
+    "bpm": { "S": "string" },
+    "composer": { "S": "string" },
+    "version": { "S": "string" },
+    "date": { "S": "string" },
+    "filename": { "S": "string" },
+    "filepath": { "S": "string" },
+    "description": { "S": "string" },
+    "lineage": { "L": [{ "S": "string" }] },
+    "s3_uri": { "S": "string" }
   }
   ```
 - **Error Responses**:

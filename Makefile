@@ -88,7 +88,7 @@ auth: setup-env
 
 # Full Deployment
 .PHONY: deploy
-deploy: build setup-env
+deploy: build
 	@echo "🚀 Deploying to production..."
 	@# Deploy application using deploy.sh
 	@echo "🚀 Deploying application..."
