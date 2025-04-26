@@ -29,6 +29,10 @@ from moto import mock_aws
 # This is necessary because the tests are in a different directory than the app
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'api'))
 
+# Set up test environment variables
+os.environ['DYNAMODB_TABLE_NAME'] = 'test-songs-table'
+os.environ['S3_BUCKET'] = 'test-bucket'
+
 @pytest.fixture
 def test_song():
     """

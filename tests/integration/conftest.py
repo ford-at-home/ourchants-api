@@ -103,4 +103,52 @@ def test_song():
         'description': 'Test description',
         'lineage': [],
         's3_uri': 's3://ourchants-songs/test_song.mp3'  # Update to match new bucket name
-    } 
+    }
+
+@pytest.fixture
+def test_songs():
+    """Create multiple test songs."""
+    return [
+        {
+            'title': 'Song 1',
+            'artist': 'Artist A',
+            'album': 'Album 1',
+            'bpm': '120',
+            'composer': 'Composer 1',
+            'version': '1.0',
+            'date': '2024-03-20 12:00:00',
+            'filename': 'song1.mp3',
+            'filepath': 'Media/song1.mp3',
+            'description': 'Test song 1',
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song1.mp3'
+        },
+        {
+            'title': 'Song 2',
+            'artist': 'Artist A',
+            'album': 'Album 1',
+            'bpm': '130',
+            'composer': 'Composer 1',
+            'version': '1.0',
+            'date': '2024-03-20 12:00:00',
+            'filename': 'song2.mp3',
+            'filepath': 'Media/song2.mp3',
+            'description': 'Test song 2',
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song2.mp3'
+        },
+        {
+            'title': 'Song 3',
+            'artist': 'Artist B',
+            'album': 'Album 2',
+            'bpm': '140',
+            'composer': 'Composer 2',
+            'version': '1.0',
+            'date': '2024-03-20 12:00:00',
+            'filename': 'song3.mp3',
+            'filepath': 'Media/song3.mp3',
+            'description': 'Test song 3',
+            'lineage': [],
+            's3_uri': 's3://ourchants-songs/song3.mp3'
+        }
+    ] 

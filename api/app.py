@@ -116,15 +116,21 @@ def lambda_handler(event, context):
                     'body': json.dumps(songs)
                 }
             elif http_method == 'POST':
-                song = api.create_song(body)
-                return {
-                    'statusCode': 201,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
-                    'body': json.dumps(song)
-                }
+                try:
+                    # Ensure body is a dictionary
+                    if not isinstance(body, dict):
+                        body = {}
+                    song = api.create_song(body)
+                    return {
+                        'statusCode': 201,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps(song)
+                    }
+                except ValidationError as e:
+                    return error_response(str(e.messages), "VALIDATION_ERROR", 400)
         elif path == '/presigned-url':
             if http_method == 'POST':
                 try:
@@ -263,14 +269,7 @@ def lambda_handler(event, context):
             if http_method == 'GET':
                 song = api.get_song(song_id)
                 if not song:
-                    return {
-                        'statusCode': 404,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        },
-                        'body': json.dumps({'error': 'Song not found'})
-                    }
+                    return error_response("Song not found", "NOT_FOUND", 404)
                 return {
                     'statusCode': 200,
                     'headers': {
@@ -280,25 +279,27 @@ def lambda_handler(event, context):
                     'body': json.dumps(song)
                 }
             elif http_method == 'PUT':
-                song = api.update_song(song_id, body)
-                if not song:
+                try:
+                    # Ensure body is a dictionary
+                    if not isinstance(body, dict):
+                        body = {}
+                    song = api.update_song(song_id, body)
+                    if not song:
+                        return error_response("Song not found", "NOT_FOUND", 404)
                     return {
-                        'statusCode': 404,
+                        'statusCode': 200,
                         'headers': {
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
                         },
-                        'body': json.dumps({'error': 'Song not found'})
+                        'body': json.dumps(song)
                     }
-                return {
-                    'statusCode': 200,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
-                    'body': json.dumps(song)
-                }
+                except ValidationError as e:
+                    return error_response(str(e.messages), "VALIDATION_ERROR", 400)
             elif http_method == 'DELETE':
+                # Check if song exists before deleting
+                if not api.get_song(song_id):
+                    return error_response("Song not found", "NOT_FOUND", 404)
                 api.delete_song(song_id)
                 return {
                     'statusCode': 204,
@@ -317,47 +318,13 @@ def lambda_handler(event, context):
         }
     except ValidationError as e:
         logger.error(f"Validation error: {str(e)}")
-        return {
-            'statusCode': 400,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({'error': str(e.messages)})
-        }
+        return error_response(str(e.messages), "VALIDATION_ERROR", 400)
     except ClientError as e:
         logger.error(f"AWS error: {str(e)}")
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': str(e),
-                'code': 'INTERNAL_ERROR'
-            })
-        }
+        return error_response("Internal server error", "INTERNAL_ERROR", 500)
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON: {str(e)}")
-        return {
-            'statusCode': 400,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({'error': 'Invalid JSON in request body'})
-        }
+        return error_response("Invalid JSON in request body", "INVALID_JSON", 400)
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'code': 'INTERNAL_ERROR'
-            })
-        } 
+        return error_response("Internal server error", "INTERNAL_ERROR", 500) 

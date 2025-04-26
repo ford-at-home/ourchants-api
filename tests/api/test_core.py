@@ -23,6 +23,36 @@ def test_list_songs(mock_dynamodb, test_song):
     assert result['items'][0]['title'] == test_song['title']
     assert result['items'][0]['artist'] == test_song['artist']
 
+def test_list_songs_empty(mock_dynamodb):
+    """Test listing songs when there are none."""
+    api = SongsApi(mock_dynamodb)
+    result = api.list_songs()
+    assert len(result['items']) == 0
+
+def test_list_songs_multiple(mock_dynamodb, test_song):
+    """Test listing multiple songs."""
+    api = SongsApi(mock_dynamodb)
+    
+    # Create multiple songs
+    song1 = test_song.copy()
+    song1['title'] = 'Song 1'
+    song1['artist'] = 'Artist 1'
+    
+    song2 = test_song.copy()
+    song2['title'] = 'Song 2'
+    song2['artist'] = 'Artist 2'
+    
+    api.create_song(song1)
+    api.create_song(song2)
+    
+    # List songs
+    result = api.list_songs()
+    assert len(result['items']) == 2
+    
+    # Verify both songs are returned
+    titles = {item['title'] for item in result['items']}
+    assert titles == {'Song 1', 'Song 2'}
+
 def test_create_song(mock_dynamodb, test_song):
     """Test creating a new song."""
     api = SongsApi(mock_dynamodb)
