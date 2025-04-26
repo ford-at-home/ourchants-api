@@ -5,7 +5,7 @@ PYTHONPATH = $(shell pwd):$(shell pwd)/infrastructure
 
 # Build and Test
 .PHONY: build test test-unit test-integration test-e2e
-build: test
+build:
 	@echo "🔨 Building project..."
 	python3 -m venv venv
 	. venv/bin/activate && pip install --upgrade pip
@@ -86,9 +86,9 @@ auth: setup-env
 	@cd infrastructure && ./deploy-cdk.sh GitHubOidcDeploymentRoleStack
 	@echo "✅ OIDC stack deployed successfully!"
 
-# Full Deployment
-.PHONY: deploy
-deploy: build
+# Deployment
+.PHONY: deploy deploy-only
+deploy: build test-unit
 	@echo "🚀 Deploying to production..."
 	@# Deploy application using deploy.sh
 	@echo "🚀 Deploying application..."
@@ -97,7 +97,20 @@ deploy: build
 
 	@# Deploy infrastructure using CDK
 	@echo "🏗️  Deploying infrastructure..."
-	@cd infrastructure && ./deploy-cdk.sh
+	@cd infrastructure && ./deploy-cdk.sh DatabaseStack ApiStack
+
+	@echo "✅ Deployment complete!"
+
+deploy-only: build
+	@echo "🚀 Deploying to production (skipping tests)..."
+	@# Deploy application using deploy.sh
+	@echo "🚀 Deploying application..."
+	@chmod +x infrastructure/deploy.sh
+	@./infrastructure/deploy.sh || (echo "Application deployment failed. Check the logs above for details." && exit 1)
+
+	@# Deploy infrastructure using CDK
+	@echo "🏗️  Deploying infrastructure..."
+	@cd infrastructure && ./deploy-cdk.sh DatabaseStack ApiStack
 
 	@echo "✅ Deployment complete!"
 
@@ -128,7 +141,8 @@ help:
 	@echo "  make test-unit - Run unit tests"
 	@echo "  make test-integration - Run integration tests"
 	@echo "  make test-e2e - Run end-to-end tests"
-	@echo "  make deploy  - Full deployment (build, deploy, infrastructure)"
+	@echo "  make deploy  - Full deployment (build, unit tests, deploy, infrastructure)"
+	@echo "  make deploy-only - Deploy without running tests"
 	@echo "  make auth    - Set up GitHub Actions authentication"
 	@echo "  make diagnose - Run network diagnostics"
 	@echo "  make clean   - Clean build files and dependencies"

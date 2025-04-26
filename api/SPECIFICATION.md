@@ -21,26 +21,6 @@ Allowed methods: GET, POST, PUT, DELETE
 Allowed headers: Content-Type, Accept
 Max age: 3000 seconds
 
-## Pagination
-All list endpoints support pagination using the following query parameters:
-
-- `limit`: Number of items per page (optional, default: 20, max: 100)
-- `offset`: Number of items to skip (optional, default: 0)
-
-Example:
-```
-GET /songs?limit=20&offset=0
-```
-
-Response format for list endpoints:
-```typescript
-interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  has_more: boolean;
-}
-```
-
 ## Data Models
 
 ### Song Object
@@ -126,24 +106,14 @@ const song = await response.json();
 ### 3. List Songs
 - **Method**: GET
 - **Path**: `/songs`
-- **Query Parameters**:
-  - `artist` (optional): Filter songs by artist name
-  - `limit` (optional): Number of items per page (default: 20, max: 100)
-  - `offset` (optional): Number of items to skip (default: 0)
 - **Response**: 200 OK
-- **Response Body**: PaginatedResponse<Song>
+- **Response Body**: List of songs
 - **Example Request**:
 ```typescript
-// Get first page of all songs
-const response = await fetch(`${API_BASE_URL}/songs?limit=20&offset=0`);
+// Get all songs
+const response = await fetch(`${API_BASE_URL}/songs`);
 const data = await response.json();
 // data.items: Song[]
-// data.total: number
-// data.has_more: boolean
-
-// Get songs by artist with pagination
-const response = await fetch(`${API_BASE_URL}/songs?artist=John&limit=20&offset=0`);
-const data = await response.json();
 ```
 
 ### 4. Update Song
@@ -329,12 +299,6 @@ if (audioUrl) {
 }
 ```
 
-### Pagination
-- Always use pagination for list endpoints
-- Start with a reasonable page size (20-50 items)
-- Implement "Load More" or "Next Page" functionality
-- Cache paginated results when possible
-
 ### Error Handling
 - Always check for error responses
 - Implement retry logic for 5xx errors
@@ -342,9 +306,7 @@ if (audioUrl) {
 - Display user-friendly error messages
 
 ### Performance
-- Use appropriate page sizes
 - Implement client-side caching
-- Prefetch next page data
 - Use compression when available
 
 ## Rate Limits and Quotas
@@ -356,10 +318,9 @@ Note: These are AWS-imposed limits and may vary based on your AWS account type a
 
 ## Future Enhancements
 1. Authentication and authorization
-2. Pagination for list endpoint
-3. Search and filter capabilities
-4. File upload integration
-5. Versioning support
+2. Search and filter capabilities
+3. File upload integration
+4. Versioning support
 
 ## Support
 For API support or to report issues, please contact the API team or create an issue in the repository.
@@ -369,4 +330,5 @@ For API support or to report issues, please contact the API team or create an is
 - Added full schema support for all song fields
 - Implemented concurrent operation handling
 - Added detailed error responses
-- Added pre-signed URL endpoint for audio playback 
+- Added pre-signed URL endpoint for audio playback
+- Removed pagination support for simplified API 

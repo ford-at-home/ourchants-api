@@ -27,72 +27,27 @@ class SongsApi:
                 song_data['s3_uri'] = ''  # Set empty string if no filename
         return song_data
 
-    def list_songs(self, artist_filter: Optional[str] = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
-        """List songs with pagination support.
+    def list_songs(self) -> Dict[str, Any]:
+        """List all songs.
         
-        Args:
-            artist_filter: Optional artist name to filter by
-            limit: Number of items per page (default: 20)
-            offset: Number of items to skip (default: 0)
-            
         Returns:
             Dict containing:
             - items: List of songs
-            - total: Total number of songs matching the filter
-            - has_more: Boolean indicating if there are more items
         """
         try:
-            # Validate pagination parameters
-            if limit < 1 or limit > 100:
-                return {
-                    'items': [],
-                    'total': 0,
-                    'has_more': False
-                }
-            
-            if offset < 0:
-                return {
-                    'items': [],
-                    'total': 0,
-                    'has_more': False
-                }
-            
-            # Build the scan parameters
-            scan_params = {}
-            
-            if artist_filter:
-                scan_params.update({
-                    'FilterExpression': '#artist = :artist',
-                    'ExpressionAttributeNames': {'#artist': 'artist'},
-                    'ExpressionAttributeValues': {':artist': artist_filter}
-                })
-            
-            # Get all items that match the filter
-            response = self.table.scan(**scan_params)
+            # Get all items
+            response = self.table.scan()
             items = response.get('Items', [])
             
-            # Get total count
-            total = len(items)
-            
-            # Apply pagination
-            paginated_items = items[offset:offset + limit] if items else []
-            
-            # Calculate has_more
-            has_more = total > offset + limit
-            
             # Ensure s3_uri is set for each item
-            processed_items = [self._ensure_s3_uri(item) for item in paginated_items]
+            processed_items = [self._ensure_s3_uri(item) for item in items]
             
             return {
-                'items': [song_schema.dump(item) for item in processed_items],
-                'total': total,
-                'has_more': has_more
+                'items': [song_schema.dump(item) for item in processed_items]
             }
         except ClientError:
             return {
-                'items': [],
-                'total': 0,
-                'has_more': False
+                'items': []
             }
 
     def create_song(self, song_data: Dict[str, str]) -> Dict[str, Any]:

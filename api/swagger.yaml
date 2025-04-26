@@ -141,46 +141,28 @@ components:
 paths:
   /songs:
     get:
-      summary: List all songs
-      description: Retrieves a list of songs with pagination and filtering support
+      summary: List songs
+      description: Get a list of songs with optional artist filtering
       operationId: listSongs
       parameters:
-        - name: artist_filter
+        - name: artist
           in: query
-          description: Filter songs by artist name
           required: false
           schema:
             type: string
-        - name: limit
-          in: query
-          description: Number of items per page (1-100)
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
-          in: query
-          description: Number of items to skip
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
+          description: Filter songs by artist name (case-insensitive)
       responses:
         '200':
-          description: List of songs retrieved successfully
+          description: List of songs
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SongList'
-        '400':
-          description: Invalid pagination parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Song'
         '500':
           description: Internal server error
           content:

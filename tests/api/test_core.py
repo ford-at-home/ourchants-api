@@ -20,8 +20,6 @@ def test_list_songs(mock_dynamodb, test_song):
     # List songs
     result = api.list_songs()
     assert len(result['items']) == 1
-    assert result['total'] == 1
-    assert result['has_more'] == False
     assert result['items'][0]['title'] == test_song['title']
     assert result['items'][0]['artist'] == test_song['artist']
 

@@ -90,71 +90,21 @@ def lambda_handler(event, context):
             logger.error("Invalid event structure: missing method or path")
             return error_response("Invalid request format", "INVALID_REQUEST")
         
-        # Route handling
+        # Handle CORS preflight requests
+        if http_method == 'OPTIONS':
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
+            }
+        
+        # Route requests based on path and method
         if path == '/songs':
             if http_method == 'GET':
-                # Extract query parameters
-                query_params = event.get('queryStringParameters', {}) or {}
-                artist_filter = query_params.get('artist_filter')
-                
-                # Extract pagination parameters
-                try:
-                    limit = int(query_params.get('limit', '20'))
-                    offset = int(query_params.get('offset', '0'))
-                except ValueError:
-                    return {
-                        'statusCode': 400,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        },
-                        'body': json.dumps({
-                            'error': 'Invalid pagination parameters',
-                            'details': 'limit and offset must be valid integers',
-                            'code': 'INVALID_PAGINATION'
-                        })
-                    }
-                
-                # Validate pagination parameters
-                if limit < 1 or limit > 100:
-                    return {
-                        'statusCode': 400,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        },
-                        'body': json.dumps({
-                            'error': 'Invalid limit parameter',
-                            'details': 'limit must be between 1 and 100',
-                            'code': 'INVALID_LIMIT'
-                        })
-                    }
-                
-                if offset < 0:
-                    return {
-                        'statusCode': 400,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-                            'Access-Control-Allow-Headers': 'Content-Type'
-                        },
-                        'body': json.dumps({
-                            'error': 'Invalid offset parameter',
-                            'details': 'offset must be non-negative',
-                            'code': 'INVALID_OFFSET'
-                        })
-                    }
-                
-                songs = api.list_songs(
-                    artist_filter=artist_filter,
-                    limit=limit,
-                    offset=offset
-                )
+                songs = api.list_songs()
                 return {
                     'statusCode': 200,
                     'headers': {
